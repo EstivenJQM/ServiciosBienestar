@@ -9,8 +9,11 @@ class AreaController extends Controller
 {
     public function index()
     {
-        $areas = Area::with(['componentes' => fn($q) => $q->orderBy('nombre'),
-                             'componentes.lineas' => fn($q) => $q->orderBy('nombre')])
+        $areas = Area::with([
+                'componentes'                        => fn($q) => $q->orderBy('nombre'),
+                'componentes.lineas'                 => fn($q) => $q->orderBy('nombre'),
+                'componentes.lineas.tiposActividad'  => fn($q) => $q->orderBy('nombre'),
+            ])
             ->orderBy('nombre')
             ->get();
 

@@ -18,4 +18,18 @@
         </x-card>
     @endforelse
 
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+            const collapseEl = document.querySelector(btn.getAttribute('data-bs-target'));
+            if (!collapseEl) return;
+            const icon = btn.querySelector('.toggle-icon');
+            if (!icon) return;
+            collapseEl.addEventListener('show.bs.collapse', () => icon.style.transform = 'rotate(90deg)');
+            collapseEl.addEventListener('hide.bs.collapse', () => icon.style.transform = 'rotate(0deg)');
+        });
+    });
+</script>
+
 </x-layout>
