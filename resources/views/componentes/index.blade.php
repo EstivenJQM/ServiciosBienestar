@@ -2,7 +2,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0"><i class="bi bi-collection-fill me-2" style="color:#6f42c1"></i>Componentes</h2>
-        <a href="{{ route('componentes.create') }}" class="btn btn-primary">
+        <a href="{{ route('componentes.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nuevo Componente
         </a>
     </div>

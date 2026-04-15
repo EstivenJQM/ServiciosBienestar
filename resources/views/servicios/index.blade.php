@@ -4,7 +4,7 @@
         <h2 class="mb-0">
             <i class="bi bi-tools me-2" style="color:#198754"></i>Servicios
         </h2>
-        <a href="{{ route('servicios.create') }}" class="btn btn-success">
+        <a href="{{ route('servicios.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nuevo Servicio
         </a>
     </div>

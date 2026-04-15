@@ -4,7 +4,7 @@
         <h2 class="mb-0">
             <i class="bi bi-geo-alt-fill me-2" style="color:#196844"></i>Sedes
         </h2>
-        <a href="{{ route('sedes.create') }}" class="btn btn-primary">
+        <a href="{{ route('sedes.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nueva Sede
         </a>
     </div>

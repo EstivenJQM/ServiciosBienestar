@@ -4,7 +4,7 @@
         <h2 class="mb-0">
             <i class="bi bi-calendar3 me-2" style="color:#0d6efd"></i>Períodos
         </h2>
-        <a href="{{ route('periodos.create') }}" class="btn btn-primary">
+        <a href="{{ route('periodos.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nuevo Período
         </a>
     </div>

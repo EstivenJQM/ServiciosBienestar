@@ -148,7 +148,7 @@
             @endforeach
 
             <div class="d-flex gap-2 mt-3">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-sibi">
                     <i class="bi bi-save me-1"></i> Guardar cambios
                 </button>
                 <a href="{{ route('programas.index') }}" class="btn btn-outline-secondary">

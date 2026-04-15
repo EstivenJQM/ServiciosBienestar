@@ -6,7 +6,7 @@
             <i class="bi bi-people-fill me-2" style="color:#196844"></i>Usuarios
         </h2>
         <a href="{{ route('usuarios.index', array_merge(request()->except(['solo_estudiantes','page']), ['solo_estudiantes' => $soloEstudiantes ? 0 : 1])) }}"
-           class="btn {{ $soloEstudiantes ? 'btn-success' : 'btn-outline-success' }}">
+           class="btn {{ $soloEstudiantes ? 'btn-sibi' : 'btn-outline-sibi' }}">
             <i class="bi bi-mortarboard{{ $soloEstudiantes ? '-fill' : '' }} me-1"></i>
             {{ $soloEstudiantes ? 'Mostrando estudiantes — Ver todos' : 'Mostrar estudiantes' }}
         </a>
@@ -30,7 +30,7 @@
                     <i class="bi bi-x-lg"></i>
                 </a>
             @endif
-            <button type="submit" class="btn btn-primary">Buscar</button>
+            <button type="submit" class="btn btn-sibi">Buscar</button>
         </div>
     </form>
 

@@ -4,7 +4,7 @@
         <h2 class="mb-0">
             <i class="bi bi-tags-fill me-2 text-success"></i>Tipos de Actividad
         </h2>
-        <a href="{{ route('tipo-actividad.create') }}" class="btn btn-primary">
+        <a href="{{ route('tipo-actividad.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nuevo Tipo
         </a>
     </div>

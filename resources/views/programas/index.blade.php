@@ -5,10 +5,10 @@
             <i class="bi bi-journal-bookmark-fill me-2" style="color:#196844"></i>Programas
         </h2>
         <div class="d-flex gap-2">
-            <a href="{{ route('programas.asignacion-snies') }}" class="btn btn-outline-primary">
+            <a href="{{ route('programas.asignacion-snies') }}" class="btn btn-outline-sibi">
                 <i class="bi bi-card-checklist me-1"></i> Asignar SNIES / Tipo formación
             </a>
-            <a href="{{ route('programas.create') }}" class="btn btn-primary">
+            <a href="{{ route('programas.create') }}" class="btn btn-sibi">
                 <i class="bi bi-plus-lg me-1"></i> Nuevo Programa
             </a>
         </div>
