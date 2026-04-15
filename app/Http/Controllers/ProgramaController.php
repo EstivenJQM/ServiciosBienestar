@@ -8,6 +8,7 @@ use App\Models\Programa;
 use App\Models\ProgramaSede;
 use App\Models\Sede;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProgramaController extends Controller
 {
@@ -217,12 +218,30 @@ class ProgramaController extends Controller
                 continue;
             }
 
-            $ps->planesEstudio()->delete();
+            $raw    = $request->planes_estudio[$idSede] ?? '';
+            $nuevos = array_values(array_filter(array_map('trim', explode(',', $raw))));
 
-            $raw = $request->planes_estudio[$idSede] ?? '';
-            $codes = array_filter(array_map('trim', explode(',', $raw)));
-            foreach ($codes as $codigo) {
-                $ps->planesEstudio()->create(['codigo_plan' => $codigo]);
+            $existentes = $ps->planesEstudio()->get();
+
+            // Borrar solo los planes que ya no están en la lista Y no tienen estudiantes referenciados
+            foreach ($existentes as $plan) {
+                if (! in_array($plan->codigo_plan, $nuevos)) {
+                    $tieneEstudiantes = \DB::table('estudiante_egresado')
+                        ->where('id_plan_estudio', $plan->id_plan_estudio)
+                        ->exists();
+
+                    if (! $tieneEstudiantes) {
+                        $plan->delete();
+                    }
+                }
+            }
+
+            // Agregar solo los planes que aún no existen
+            $codigosActuales = $ps->planesEstudio()->pluck('codigo_plan')->toArray();
+            foreach ($nuevos as $codigo) {
+                if (! in_array($codigo, $codigosActuales)) {
+                    $ps->planesEstudio()->create(['codigo_plan' => $codigo]);
+                }
             }
         }
     }
