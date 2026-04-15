@@ -10,6 +10,7 @@ use App\Http\Controllers\FacultadController;
 use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\CargaEstudiantesController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,3 +28,8 @@ Route::resource('programas', ProgramaController::class)->except(['show']);
 
 Route::resource('periodos',  PeriodoController::class)->except(['show']);
 Route::resource('servicios', ServicioController::class)->except(['show']);
+
+Route::get ('usuarios/carga-estudiantes',        [CargaEstudiantesController::class, 'index'])
+    ->name('usuarios.carga-estudiantes.index');
+Route::post('usuarios/carga-estudiantes',        [CargaEstudiantesController::class, 'store'])
+    ->name('usuarios.carga-estudiantes.store');

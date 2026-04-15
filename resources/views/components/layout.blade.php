@@ -5,7 +5,7 @@
         request()->routeIs('areas.*', 'componentes.*', 'lineas.*', 'tipo-actividad.*') => 'caracterizacion',
         request()->routeIs('sedes.*', 'facultades.*', 'programas.*') => 'academico',
         request()->routeIs('servicios.*', 'periodos.*') => 'servicios',
-        request()->routeIs('usuarios.*')  => 'usuarios',
+        request()->routeIs('usuarios.*')   => 'usuarios',
         default => null,
     };
 @endphp
@@ -139,7 +139,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ $seccionActiva === 'usuarios' ? 'active' : '' }}"
-                   href="#">
+                   href="{{ route('usuarios.carga-estudiantes.index') }}">
                     <i class="bi bi-people me-1"></i>Usuarios
                 </a>
             </li>
@@ -201,7 +201,10 @@
 
         @elseif($seccionActiva === 'usuarios')
             <p class="sidebar-heading">Usuarios</p>
-            <span class="sidebar-link text-muted">Próximamente...</span>
+            <a href="{{ route('usuarios.carga-estudiantes.index') }}"
+               class="sidebar-link {{ request()->routeIs('usuarios.carga-estudiantes.*') ? 'active' : '' }}">
+                <i class="bi bi-person-fill-up"></i> Carga Estudiantes
+            </a>
 
         @else
             <p class="sidebar-heading">Menú</p>
