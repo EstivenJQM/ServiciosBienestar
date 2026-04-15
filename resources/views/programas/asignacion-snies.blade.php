@@ -101,8 +101,9 @@
                                                 <i class="bi bi-dash-circle me-1"></i>Sin sedes asociadas.
                                             </p>
                                         @else
+                                            <div class="border rounded-3" style="overflow:hidden;">
                                             <div class="table-responsive">
-                                                <table class="table table-sm table-bordered mb-0">
+                                                <table class="table table-sm mb-0" style="margin-bottom:0!important">
                                                     <thead class="table-light">
                                                         <tr>
                                                             <th style="width:90px">Código</th>
@@ -134,6 +135,7 @@
                                                         @endforeach
                                                     </tbody>
                                                 </table>
+                                            </div>
                                             </div>
                                         @endif
                                     </div>

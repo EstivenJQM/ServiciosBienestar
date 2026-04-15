@@ -94,8 +94,9 @@
 
                             {{-- Tabla de planes por sede --}}
                             @if($programa->sedes->isNotEmpty())
+                                <div class="border rounded-3" style="overflow:hidden;">
                                 <div class="table-responsive">
-                                    <table class="table table-sm table-hover table-bordered mb-0" style="font-size:.82rem">
+                                    <table class="table table-sm table-hover mb-0" style="font-size:.82rem;margin-bottom:0!important">
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width:110px">Código plan</th>
@@ -148,6 +149,7 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                                </div>
                                 </div>
                             @else
                                 <p class="text-muted small mb-0">
