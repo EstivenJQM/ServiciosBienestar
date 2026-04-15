@@ -50,42 +50,53 @@
 
         @foreach($usuarios as $usuario)
             @php
-                $urs = $usuario->rolesEnSedes->sortByDesc(fn($r) => $r->id_periodo);
+                $urs        = $usuario->rolesEnSedes->sortByDesc(fn($r) => $r->id_periodo);
+                $collapseId = 'usr-' . $usuario->id_usuario;
             @endphp
-            <div class="card shadow-sm mb-2">
-                <div class="card-body py-2 px-3">
 
-                    {{-- Fila de identidad --}}
-                    <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-                        <div class="d-flex align-items-center gap-2 flex-wrap">
-                            <span class="fw-semibold">{{ $usuario->nombre_completo }}</span>
-                            <span class="badge bg-secondary" style="font-size:.7rem">
-                                <i class="bi bi-person-vcard me-1"></i>{{ $usuario->documento }}
-                            </span>
+            <div class="tree-area rounded p-3 mb-2 bg-white shadow-sm">
+
+                {{-- Fila principal --}}
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap">
+                        <button class="btn btn-link text-start fw-bold p-0 text-decoration-none text-dark d-flex align-items-center gap-1"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#{{ $collapseId }}"
+                                aria-expanded="false">
+                            <i class="bi bi-chevron-right toggle-icon" style="font-size:.75rem;transition:transform .2s"></i>
+                            {{ $usuario->nombre_completo }}
+                        </button>
+                        <span class="badge bg-secondary" style="font-size:.7rem">
+                            <i class="bi bi-person-vcard me-1"></i>{{ $usuario->documento }}
+                        </span>
+                        @if($usuario->correo)
                             <span class="text-muted small">
                                 <i class="bi bi-envelope me-1"></i>{{ $usuario->correo }}
                             </span>
-                        </div>
-                        <div class="d-flex gap-1 flex-shrink-0">
-                            <a href="{{ route('usuarios.edit', $usuario) }}"
-                               class="btn btn-sm btn-warning" title="Editar">
-                                <i class="bi bi-pencil-fill"></i>
-                            </a>
-                            <form action="{{ route('usuarios.destroy', $usuario) }}" method="POST"
-                                  class="d-inline"
-                                  onsubmit="return confirm('¿Eliminar al usuario {{ $usuario->nombre_completo }}?\nSe eliminarán también todos sus roles y registros asociados.')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
-                                    <i class="bi bi-trash-fill"></i>
-                                </button>
-                            </form>
-                        </div>
+                        @endif
                     </div>
+                    <div class="d-flex gap-1 flex-shrink-0">
+                        <a href="{{ route('usuarios.edit', $usuario) }}"
+                           class="btn btn-sm btn-warning" title="Editar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <form action="{{ route('usuarios.destroy', $usuario) }}" method="POST"
+                              class="d-inline"
+                              onsubmit="return confirm('¿Eliminar al usuario {{ $usuario->nombre_completo }}?\nSe eliminarán también todos sus roles y registros asociados.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
-                    {{-- Roles en sedes --}}
+                {{-- Detalle colapsable --}}
+                <div class="collapse mt-2 ms-3" id="{{ $collapseId }}">
                     @if($urs->isNotEmpty())
-                        <div class="d-flex flex-column gap-1 mt-1">
+                        <div class="d-flex flex-column gap-1">
                             @foreach($urs as $entry)
                                 @php
                                     $esEstudiante = $entry->rol?->nombre === 'Estudiante';
@@ -101,62 +112,54 @@
                                         'Empleado'   => '#fff8e1',
                                         default      => '#f3f4f6',
                                     };
+                                    $bs = 'd-inline-flex align-items-center px-2 py-0 gap-1';
+                                    $bh = 'height:1.6rem;font-size:.7rem';
                                 @endphp
                                 <div class="d-flex align-items-center flex-wrap gap-1"
                                      style="padding:4px 6px; background:{{ $rolBg }}; border-radius:.375rem; border-left: 3px solid {{ $rolColor }}">
 
-                                    @php $bs = 'd-inline-flex align-items-center px-2 py-0 gap-1'; $bh = 'height:1.6rem;font-size:.7rem'; @endphp
-
-                                    {{-- Rol --}}
                                     <span class="badge {{ $bs }}" style="{{ $bh }};background-color:{{ $rolColor }}">
                                         {{ $entry->rol?->nombre ?? '—' }}
                                     </span>
 
-                                    {{-- Sede --}}
                                     @if($entry->sede)
                                         <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
                                             <span class="badge bg-secondary" style="font-size:.62rem">{{ $entry->sede->codigo }}</span>{{ $entry->sede->nombre }}
                                         </span>
                                     @endif
 
-                                    {{-- Período --}}
                                     @if($entry->periodo)
                                         <span class="badge bg-light text-dark border {{ $bs }}" style="{{ $bh }}">
                                             <i class="bi bi-calendar3"></i>{{ $entry->periodo->nombre }}
                                         </span>
                                     @endif
 
-                                    {{-- Estado --}}
                                     <span class="badge {{ $bs }} {{ $entry->estado === 'activo' ? 'bg-success' : 'bg-danger' }}"
                                           style="{{ $bh }}">
                                         {{ ucfirst($entry->estado) }}
                                     </span>
 
-                                    {{-- Info académica del estudiante (sólo en modo estudiante) --}}
                                     @if($soloEstudiantes && $esEstudiante && $entry->estudianteEgresado)
                                         @php
-                                            $plan      = $entry->estudianteEgresado->planEstudio;
-                                            $progSede  = $plan?->programaSede;
-                                            $programa  = $progSede?->programa;
-                                            $facultad  = $programa?->facultad;
+                                            $plan     = $entry->estudianteEgresado->planEstudio;
+                                            $progSede = $plan?->programaSede;
+                                            $programa = $progSede?->programa;
+                                            $facultad = $programa?->facultad;
                                         @endphp
                                         <span class="vr mx-1 align-self-center"></span>
-
                                         @if($plan)
-                                            <span class="badge bg-info text-dark" style="font-size:.7rem">
-                                                <i class="bi bi-book me-1"></i>Plan {{ $plan->codigo_plan }}
+                                            <span class="badge bg-info text-dark {{ $bs }}" style="{{ $bh }}">
+                                                <i class="bi bi-book"></i>Plan {{ $plan->codigo_plan }}
                                             </span>
                                         @endif
-
                                         @if($programa)
-                                            <span class="badge bg-white text-dark border" style="font-size:.7rem">
-                                                <i class="bi bi-journal-bookmark me-1"></i>{{ $programa->nombre }}
+                                            <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
+                                                <i class="bi bi-journal-bookmark"></i>{{ $programa->nombre }}
                                             </span>
                                         @endif
-
                                         @if($facultad)
-                                            <span class="badge" style="background-color:#6f42c1;font-size:.7rem">
-                                                <i class="bi bi-building me-1"></i>{{ $facultad->nombre }}
+                                            <span class="badge {{ $bs }}" style="{{ $bh }};background-color:#6f42c1">
+                                                <i class="bi bi-building"></i>{{ $facultad->nombre }}
                                             </span>
                                         @endif
                                     @endif
@@ -165,10 +168,10 @@
                             @endforeach
                         </div>
                     @else
-                        <span class="text-muted small">Sin roles asignados</span>
+                        <span class="text-muted small">Sin roles asignados.</span>
                     @endif
-
                 </div>
+
             </div>
         @endforeach
 
@@ -177,5 +180,18 @@
             {{ $usuarios->links() }}
         </div>
     @endif
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+            const collapseEl = document.querySelector(btn.getAttribute('data-bs-target'));
+            if (!collapseEl) return;
+            const icon = btn.querySelector('.toggle-icon');
+            if (!icon) return;
+            collapseEl.addEventListener('show.bs.collapse', () => icon.style.transform = 'rotate(90deg)');
+            collapseEl.addEventListener('hide.bs.collapse', () => icon.style.transform = 'rotate(0deg)');
+        });
+    });
+</script>
 
 </x-layout>
