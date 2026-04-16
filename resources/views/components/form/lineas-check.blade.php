@@ -13,7 +13,7 @@
                 @if($componente->lineas->isNotEmpty())
                     {{-- Cabecera Área › Componente --}}
                     <p class="mb-1 mt-2 small fw-semibold text-muted">
-                        <span class="badge bg-primary" style="font-size:.7rem">{{ $componente->area->nombre }}</span>
+                        <span class="badge" style="background-color:#3369b3;font-size:.7rem">{{ $componente->area->nombre }}</span>
                         <i class="bi bi-chevron-right mx-1" style="font-size:.65rem"></i>
                         <span class="badge" style="background-color:#6f42c1;font-size:.7rem">{{ $componente->nombre }}</span>
                     </p>
