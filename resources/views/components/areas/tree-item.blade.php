@@ -2,12 +2,12 @@
 
 @php $areaId = 'area-' . $area->id_area; @endphp
 
-<div class="tree-area rounded p-3 mb-3 bg-white shadow-sm" style="border-left-color:#0d6efd">
+<div class="tree-area rounded p-3 mb-3 bg-white shadow-sm" style="border-left-color:#3369b3">
 
     {{-- Área --}}
     <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2 flex-grow-1">
-            <span class="badge bg-primary rounded-pill px-2">Área</span>
+            <span class="badge rounded-pill px-2" style="background-color:#3369b3">Área</span>
             <button class="btn btn-link text-start fw-bold fs-6 p-0 text-decoration-none text-dark d-flex align-items-center gap-1"
                     type="button"
                     data-bs-toggle="collapse"
@@ -16,7 +16,7 @@
                 <i class="bi bi-chevron-right toggle-icon" style="font-size:.75rem;transition:transform .2s"></i>
                 {{ $area->nombre }}
                 @if($area->componentes->isNotEmpty())
-                    <span class="badge bg-primary bg-opacity-25 text-primary fw-normal ms-1" style="font-size:.7rem">
+                    <span class="badge fw-normal ms-1" style="font-size:.7rem;background-color:#d0dff5;color:#3369b3">
                         {{ $area->componentes->count() }}
                     </span>
                 @endif

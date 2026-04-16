@@ -21,7 +21,7 @@
             @if($lineas->has($idComp))
                 {{-- Cabeceras Área › Componente --}}
                 <div class="d-flex align-items-center gap-2 mt-3 mb-1">
-                    <span class="badge bg-primary px-3 py-2 fs-6">
+                    <span class="badge px-3 py-2 fs-6" style="background-color:#3369b3">
                         <i class="bi bi-diagram-3 me-1"></i>{{ $componente->area->nombre }}
                     </span>
                     <i class="bi bi-chevron-right text-muted"></i>

@@ -18,7 +18,7 @@
         @foreach($areas as $idArea => $area)
             @if($componentes->has($idArea))
                 <div class="d-flex align-items-center gap-2 mb-2 mt-3">
-                    <span class="badge bg-primary fs-6 px-3 py-2">
+                    <span class="badge fs-6 px-3 py-2" style="background-color:#3369b3">
                         <i class="bi bi-diagram-3 me-1"></i>{{ $area->nombre }}
                     </span>
                 </div>

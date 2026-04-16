@@ -63,7 +63,7 @@
 
                             <div class="mb-2">
                                 <div class="d-flex align-items-center gap-1 mb-1">
-                                    <span class="badge bg-primary" style="font-size:.7rem">{{ $comp->area->nombre }}</span>
+                                    <span class="badge" style="background-color:#3369b3;font-size:.7rem">{{ $comp->area->nombre }}</span>
                                     <i class="bi bi-chevron-right text-muted" style="font-size:.65rem"></i>
                                     <span class="badge" style="background-color:#6f42c1;font-size:.7rem">{{ $comp->nombre }}</span>
                                 </div>
