@@ -39,12 +39,23 @@
                     </div>
 
                     @foreach($programas[$idFacultad] as $programa)
-                        <div class="card shadow-sm mb-3">
+                        @php
+                            $sinTipo  = $programa->id_tipo_formacion === null;
+                            $sinSnies = $programa->sedes->contains(fn($s) => empty($s->pivot->codigo_snies));
+                            $incompleto = $sinTipo || $sinSnies;
+                        @endphp
+                        <div class="card shadow-sm mb-3 {{ $incompleto ? 'border-warning' : '' }}">
                             <div class="card-body py-3">
 
                                 {{-- Nombre del programa --}}
-                                <div class="fw-semibold mb-2">
+                                <div class="fw-semibold mb-2 d-flex align-items-center gap-2">
                                     <i class="bi bi-journal-text me-1 text-secondary"></i>{{ $programa->nombre }}
+                                    @if($sinTipo)
+                                        <span class="badge bg-warning text-dark" style="font-size:.65rem">Sin tipo de formación</span>
+                                    @endif
+                                    @if($sinSnies)
+                                        <span class="badge bg-warning text-dark" style="font-size:.65rem">Sin SNIES</span>
+                                    @endif
                                 </div>
 
                                 <div class="row g-3 align-items-start">

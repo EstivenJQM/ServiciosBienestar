@@ -16,6 +16,10 @@ class UsuarioController extends Controller
     {
         $soloEstudiantes = $request->boolean('solo_estudiantes');
         $busqueda        = trim($request->get('q', ''));
+        $idSede          = $request->get('id_sede');
+        $idRol           = $request->get('id_rol');
+        $idPeriodo       = $request->get('id_periodo');
+        $estado          = $request->get('estado');
 
         $query = Usuario::with([
             'rolesEnSedes.rol',
@@ -39,13 +43,37 @@ class UsuarioController extends Controller
             );
         }
 
+        if ($idSede) {
+            $query->whereHas('rolesEnSedes', fn($q) => $q->where('id_sede', $idSede));
+        }
+
+        if ($idRol) {
+            $query->whereHas('rolesEnSedes', fn($q) => $q->where('id_rol', $idRol));
+        }
+
+        if ($idPeriodo) {
+            $query->whereHas('rolesEnSedes', fn($q) => $q->where('id_periodo', $idPeriodo));
+        }
+
+        if ($estado) {
+            $query->whereHas('rolesEnSedes', fn($q) => $q->where('estado', $estado));
+        }
+
         $usuarios = $query
             ->orderBy('primer_apellido')
             ->orderBy('primer_nombre')
             ->paginate(30)
             ->withQueryString();
 
-        return view('usuarios.index', compact('usuarios', 'soloEstudiantes', 'busqueda'));
+        $sedes   = Sede::orderBy('nombre')->get();
+        $roles   = Rol::orderBy('nombre')->get();
+        $periodos = Periodo::orderByDesc('nombre')->get();
+
+        return view('usuarios.index', compact(
+            'usuarios', 'soloEstudiantes', 'busqueda',
+            'sedes', 'roles', 'periodos',
+            'idSede', 'idRol', 'idPeriodo', 'estado'
+        ));
     }
 
     public function edit(Usuario $usuario)

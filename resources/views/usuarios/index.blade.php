@@ -12,27 +12,119 @@
         </a>
     </div>
 
-    {{-- ── Buscador ── --}}
+    {{-- ── Filtros ── --}}
+    @php
+        $filtrosActivos = array_filter(compact('idSede','idRol','idPeriodo','estado','busqueda'));
+        $hayFiltros     = $soloEstudiantes || count($filtrosActivos) > 0;
+    @endphp
+
     <form method="GET" action="{{ route('usuarios.index') }}" class="mb-3">
         @if($soloEstudiantes)
             <input type="hidden" name="solo_estudiantes" value="1">
         @endif
-        <div class="input-group" style="max-width:460px">
-            <span class="input-group-text bg-white">
-                <i class="bi bi-search text-muted"></i>
-            </span>
-            <input type="text" name="q" value="{{ $busqueda }}"
-                   class="form-control"
-                   placeholder="Buscar por nombre, documento o correo…">
-            @if($busqueda)
-                <a href="{{ route('usuarios.index', $soloEstudiantes ? ['solo_estudiantes'=>1] : []) }}"
-                   class="btn btn-outline-secondary" title="Limpiar búsqueda">
-                    <i class="bi bi-x-lg"></i>
+
+        {{-- Fila 1: búsqueda + botón limpiar --}}
+        <div class="d-flex flex-wrap gap-2 align-items-end mb-2">
+            <div class="input-group" style="max-width:400px">
+                <span class="input-group-text bg-white">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" name="q" value="{{ $busqueda }}"
+                       class="form-control"
+                       placeholder="Nombre, documento o correo…">
+            </div>
+
+            <button type="submit" class="btn btn-sibi">
+                <i class="bi bi-funnel me-1"></i>Filtrar
+            </button>
+
+            @if($hayFiltros)
+                <a href="{{ route('usuarios.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Limpiar filtros
                 </a>
             @endif
-            <button type="submit" class="btn btn-sibi">Buscar</button>
+        </div>
+
+        {{-- Fila 2: selects de filtro --}}
+        <div class="d-flex flex-wrap gap-2">
+
+            <select name="id_sede" class="form-select form-select-sm" style="max-width:200px">
+                <option value="">— Todas las sedes —</option>
+                @foreach($sedes as $sede)
+                    <option value="{{ $sede->id_sede }}"
+                        {{ $idSede == $sede->id_sede ? 'selected' : '' }}>
+                        [{{ $sede->codigo }}] {{ $sede->nombre }}
+                    </option>
+                @endforeach
+            </select>
+
+            <select name="id_rol" class="form-select form-select-sm" style="max-width:170px">
+                <option value="">— Todos los roles —</option>
+                @foreach($roles as $rol)
+                    <option value="{{ $rol->id_rol }}"
+                        {{ $idRol == $rol->id_rol ? 'selected' : '' }}>
+                        {{ $rol->nombre }}
+                    </option>
+                @endforeach
+            </select>
+
+            <select name="id_periodo" class="form-select form-select-sm" style="max-width:160px">
+                <option value="">— Todos los períodos —</option>
+                @foreach($periodos as $periodo)
+                    <option value="{{ $periodo->id_periodo }}"
+                        {{ $idPeriodo == $periodo->id_periodo ? 'selected' : '' }}>
+                        {{ $periodo->nombre }}
+                    </option>
+                @endforeach
+            </select>
+
+            <select name="estado" class="form-select form-select-sm" style="max-width:150px">
+                <option value="">— Cualquier estado —</option>
+                <option value="activo"   {{ $estado === 'activo'   ? 'selected' : '' }}>Activo</option>
+                <option value="inactivo" {{ $estado === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
+            </select>
+
         </div>
     </form>
+
+    {{-- Badges de filtros activos --}}
+    @if($hayFiltros)
+        <div class="d-flex flex-wrap gap-1 mb-2">
+            @if($soloEstudiantes)
+                <span class="badge" style="background-color:#196844">
+                    <i class="bi bi-mortarboard-fill me-1"></i>Solo estudiantes
+                </span>
+            @endif
+            @if($busqueda)
+                <span class="badge bg-secondary">
+                    <i class="bi bi-search me-1"></i>«{{ $busqueda }}»
+                </span>
+            @endif
+            @if($idSede)
+                @php $s = $sedes->firstWhere('id_sede', $idSede) @endphp
+                <span class="badge bg-secondary">
+                    <i class="bi bi-geo-alt me-1"></i>{{ $s?->nombre ?? $idSede }}
+                </span>
+            @endif
+            @if($idRol)
+                @php $r = $roles->firstWhere('id_rol', $idRol) @endphp
+                <span class="badge bg-secondary">
+                    <i class="bi bi-person-badge me-1"></i>{{ $r?->nombre ?? $idRol }}
+                </span>
+            @endif
+            @if($idPeriodo)
+                @php $p = $periodos->firstWhere('id_periodo', $idPeriodo) @endphp
+                <span class="badge bg-secondary">
+                    <i class="bi bi-calendar3 me-1"></i>{{ $p?->nombre ?? $idPeriodo }}
+                </span>
+            @endif
+            @if($estado)
+                <span class="badge {{ $estado === 'activo' ? 'bg-success' : 'bg-danger' }}">
+                    {{ ucfirst($estado) }}
+                </span>
+            @endif
+        </div>
+    @endif
 
     {{-- ── Resultados ── --}}
     @if($usuarios->isEmpty())
@@ -45,7 +137,6 @@
     @else
         <p class="text-muted small mb-2">
             {{ number_format($usuarios->total()) }} usuario(s) encontrado(s)
-            @if($soloEstudiantes) — filtro: <strong>Estudiantes</strong> @endif
         </p>
 
         @foreach($usuarios as $usuario)

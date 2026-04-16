@@ -148,7 +148,13 @@ class ProgramaController extends Controller
             ->orderBy('id_facultad')
             ->orderBy('nombre')
             ->get()
-            ->groupBy('id_facultad');
+            ->groupBy('id_facultad')
+            ->map(fn($grupo) => $grupo->sortBy(fn($p) =>
+                // 0 = incompleto (va primero), 1 = completo
+                ($p->id_tipo_formacion !== null &&
+                 $p->sedes->every(fn($s) => !empty($s->pivot->codigo_snies)))
+                    ? 1 : 0
+            )->values());
 
         $facultades = Facultad::orderBy('nombre')->get()->keyBy('id_facultad');
         $niveles    = NivelAcademico::with(['tiposFormacion' => fn($q) => $q->orderBy('nombre')])->get();
