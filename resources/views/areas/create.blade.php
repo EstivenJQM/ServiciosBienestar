@@ -2,7 +2,7 @@
 
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <x-card title="Nueva Área" color="primary">
+            <x-card title="Nueva Área" color="sibi">
                 <form action="{{ route('areas.store') }}" method="POST">
                     @csrf
 

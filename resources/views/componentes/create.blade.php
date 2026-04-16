@@ -3,7 +3,7 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header text-white" style="background-color:#3369b3">
+                <div class="card-header text-white" style="background-color:#196844">
                     <h5 class="mb-0">Nuevo Componente</h5>
                 </div>
                 <div class="card-body">
