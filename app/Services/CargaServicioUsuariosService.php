@@ -64,12 +64,14 @@ class CargaServicioUsuariosService
                 continue;
             }
 
-            $existe = DB::table('servicio_usuario')
-                ->where('id_servicio',        $servicio->id_servicio)
-                ->where('id_usuario_rol_sede', $urs)
+            // Verificar si el usuario (sin importar el rol) ya está en este servicio
+            $yaAsignado = DB::table('servicio_usuario as su')
+                ->join('usuario_rol_sede as urs2', 'urs2.id_usuario_rol_sede', '=', 'su.id_usuario_rol_sede')
+                ->where('su.id_servicio',  $servicio->id_servicio)
+                ->where('urs2.id_usuario', $usuario->id_usuario)
                 ->exists();
 
-            if ($existe) {
+            if ($yaAsignado) {
                 $yaExistian++;
                 continue;
             }

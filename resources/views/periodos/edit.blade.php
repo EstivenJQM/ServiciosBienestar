@@ -24,7 +24,7 @@
                     </div>
 
                     <x-form.actions
-                        :back="route('areas.index')"
+                        :back="route('periodos.index')"
                         label="Actualizar"
                         color="warning"
                        
