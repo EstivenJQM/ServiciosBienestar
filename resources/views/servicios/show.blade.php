@@ -40,22 +40,32 @@
                     @csrf
 
                     <p class="small text-muted mb-3">
-                        Suba un archivo <strong>.txt</strong> con una cédula por línea.
-                        Solo se vinculan usuarios ya registrados con rol activo
-                        en <strong>{{ $servicio->sede->nombre }}</strong>
-                        durante el período <strong>{{ $servicio->periodo->nombre }}</strong>.
+                        Se vinculan usuarios que tengan el rol indicado activo
+                        durante el período <strong>{{ $servicio->periodo->nombre }}</strong>,
+                        independientemente de la sede en que estén registrados.
                     </p>
+
+                    <div class="alert alert-light border p-2 mb-3">
+                        <p class="small fw-semibold mb-1">
+                            <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
+                        </p>
+                        <code class="small">DOCUMENTO ; ROL</code>
+                        <p class="small text-muted mt-1 mb-0">
+                            Ejemplo: <code>1234567 ; Estudiante</code><br>
+                            Roles válidos: <code>Estudiante</code>, <code>Graduado</code>, <code>Empleado</code>, <code>Familiar</code>
+                        </p>
+                    </div>
 
                     <div class="mb-3">
                         <label for="archivo" class="form-label fw-semibold">
-                            Archivo de cédulas <span class="text-danger">*</span>
+                            Archivo CSV <span class="text-danger">*</span>
                         </label>
-                        <input type="file" id="archivo" name="archivo" accept=".txt,.csv"
+                        <input type="file" id="archivo" name="archivo" accept=".csv,.txt"
                                class="form-control {{ $errors->has('archivo') ? 'is-invalid' : '' }}">
                         @error('archivo')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <div class="form-text">Una cédula por línea, sin encabezados. Máx. 5 MB.</div>
+                        <div class="form-text">Formato UTF-8, separado por punto y coma (;). Máx. 5 MB.</div>
                     </div>
 
                     <button type="submit" class="btn btn-sibi w-100">

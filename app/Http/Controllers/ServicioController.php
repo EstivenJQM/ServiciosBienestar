@@ -176,10 +176,10 @@ class ServicioController extends Controller
         CargaServicioUsuariosService $service
     ) {
         $request->validate([
-            'archivo' => 'required|file|mimes:txt,csv|max:5120',
+            'archivo' => 'required|file|mimes:csv,txt|max:5120',
         ], [
-            'archivo.required' => 'Seleccione un archivo.',
-            'archivo.mimes'    => 'El archivo debe ser .txt o .csv.',
+            'archivo.required' => 'Seleccione un archivo CSV.',
+            'archivo.mimes'    => 'El archivo debe ser .csv.',
             'archivo.max'      => 'El archivo no debe superar 5 MB.',
         ]);
 
