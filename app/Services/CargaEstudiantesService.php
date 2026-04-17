@@ -8,42 +8,47 @@ use Illuminate\Support\Facades\Log;
 
 class CargaEstudiantesService
 {
-    // Caches en memoria para evitar queries repetidas
-    private array $sedeCache     = [];   // codigo        => stdClass{id_sede, nombre}
-    private array $facultadCache = [];   // normalizado   => stdClass{id_facultad, nombre}
-    private array $programaCache = [];   // "idFac|norm"  => stdClass{id_programa, nombre}
-    private array $progSedeCache = [];   // "idProg|idSed"=> id_programa_sede
-    private array $planCache     = [];   // "idPS|codigo" => id_plan_estudio
+    private array $sedeCache     = [];
+    private array $facultadCache = [];
+    private array $programaCache = [];
+    private array $progSedeCache = [];
+    private array $planCache     = [];
 
-    private int $idRolEstudiante;
-    private int $idPeriodo;
+    private int    $idRol;
+    private string $nombreRol;
+    private int    $idPeriodo;
 
     // ─────────────────────────────────────────────
     //  Punto de entrada
     // ─────────────────────────────────────────────
-    public function cargar(UploadedFile $archivo, int $idPeriodo): array
+    public function cargar(UploadedFile $archivo, int $idPeriodo, string $nombreRol = 'Estudiante'): array
     {
         set_time_limit(300);
 
-        $this->idPeriodo      = $idPeriodo;
-        $this->idRolEstudiante = (int) DB::table('rol')
-            ->where('nombre', 'Estudiante')
-            ->value('id_rol');
+        $this->idPeriodo = $idPeriodo;
+        $this->nombreRol = $nombreRol;
+        $this->idRol     = (int) DB::table('rol')->where('nombre', $nombreRol)->value('id_rol');
+
+        if (! $this->idRol) {
+            return [
+                'creados'      => 0,
+                'actualizados' => 0,
+                'errores'      => ["El rol \"{$nombreRol}\" no existe en el sistema."],
+                'total'        => 0,
+            ];
+        }
 
         $this->cargarCaches();
 
         $handle = fopen($archivo->getRealPath(), 'r');
 
-        // Quitar BOM UTF-8 si existe
         $bom = fread($handle, 3);
         if ($bom !== "\xEF\xBB\xBF") {
             rewind($handle);
         }
 
-        // Detectar separador con la primera línea (cabecera)
         $cabecera = fgets($handle);
         $sep = str_contains($cabecera, ';') ? ';' : ',';
-        // No usamos la cabecera, el ciclo lee desde la 2.ª línea
 
         $creados      = 0;
         $actualizados = 0;
@@ -70,7 +75,6 @@ class CargaEstudiantesService
                 $nombreFacultad,
             ] = array_map('trim', array_slice($cols, 0, 9));
 
-            // Validar campos NOT NULL de la tabla usuario
             $camposVacios = [];
             if (empty($documento))      $camposVacios[] = 'documento';
             if (empty($nombres))        $camposVacios[] = 'nombres';
@@ -86,7 +90,7 @@ class CargaEstudiantesService
                 $msg       = 'Fila ' . $fila . ': campo(s) obligatorio(s) vacío(s): ' . implode(', ', $camposVacios) . '.';
                 $errores[] = $msg;
                 $this->guardarInconsistencia(
-                    $idPeriodo, $fila,
+                    $idPeriodo, $nombreRol, $fila,
                     $documento, $nombres, $apellidos, $email,
                     $codigoSede, $nombreSede, $codigoPlan,
                     $nombrePrograma, $nombreFacultad,
@@ -115,9 +119,8 @@ class CargaEstudiantesService
                 $msgError  = $e->getMessage();
                 $errores[] = "Fila {$fila} (doc: {$documento}): {$msgError}";
 
-                // Persistir la fila fallida para revisión posterior
                 $this->guardarInconsistencia(
-                    $idPeriodo, $fila,
+                    $idPeriodo, $nombreRol, $fila,
                     $documento, $nombres, $apellidos, $email,
                     $codigoSede, $nombreSede, $codigoPlan,
                     $nombrePrograma, $nombreFacultad,
@@ -141,29 +144,24 @@ class CargaEstudiantesService
     // ─────────────────────────────────────────────
     private function cargarCaches(): void
     {
-        // Sedes: indexadas por código
         foreach (DB::table('sede')->get() as $s) {
             $this->sedeCache[(string) $s->codigo] = $s;
         }
 
-        // Facultades: indexadas por nombre normalizado
         foreach (DB::table('facultad')->get() as $f) {
             $this->facultadCache[$this->normalizar($f->nombre)] = $f;
         }
 
-        // Programas: indexados por "id_facultad|nombre_normalizado"
         foreach (DB::table('programa')->get() as $p) {
             $clave = $p->id_facultad . '|' . $this->normalizar($p->nombre);
             $this->programaCache[$clave] = $p;
         }
 
-        // programa_sede: indexado por "id_programa|id_sede"
         foreach (DB::table('programa_sede')->get() as $ps) {
             $clave = $ps->id_programa . '|' . $ps->id_sede;
             $this->progSedeCache[$clave] = $ps->id_programa_sede;
         }
 
-        // plan_estudio: indexado por "id_programa_sede|codigo_plan"
         foreach (DB::table('plan_estudio')->get() as $pl) {
             $clave = $pl->id_programa_sede . '|' . $pl->codigo_plan;
             $this->planCache[$clave] = $pl->id_plan_estudio;
@@ -189,18 +187,15 @@ class CargaEstudiantesService
     {
         $normEntrada = $this->normalizar($nombre);
 
-        // Buscar exacto
         if (isset($this->facultadCache[$normEntrada])) {
             return $this->facultadCache[$normEntrada];
         }
 
-        // Buscar fuzzy
         $claveFuzzy = $this->buscarFuzzy($normEntrada, array_keys($this->facultadCache));
         if ($claveFuzzy !== null) {
             return $this->facultadCache[$claveFuzzy];
         }
 
-        // Crear nueva
         $nombreLimpio = mb_strtoupper(trim($nombre));
         $id = DB::table('facultad')->insertGetId([
             'nombre'     => $nombreLimpio,
@@ -238,7 +233,6 @@ class CargaEstudiantesService
             return $this->programaCache[$claveExacta];
         }
 
-        // Fuzzy dentro de la misma facultad
         $clavesDeEstaFacultad = array_filter(
             array_keys($this->programaCache),
             fn($k) => str_starts_with($k, $idFacultad . '|')
@@ -254,7 +248,6 @@ class CargaEstudiantesService
             return $this->programaCache[$clave];
         }
 
-        // Crear nuevo
         $nombreLimpio = mb_strtoupper(trim($nombre));
         $id = DB::table('programa')->insertGetId([
             'id_facultad'      => $idFacultad,
@@ -345,7 +338,7 @@ class CargaEstudiantesService
     {
         $existente = DB::table('usuario_rol_sede')
             ->where('id_usuario', $idUsuario)
-            ->where('id_rol',     $this->idRolEstudiante)
+            ->where('id_rol',     $this->idRol)
             ->where('id_sede',    $idSede)
             ->where('id_periodo', $this->idPeriodo)
             ->value('id_usuario_rol_sede');
@@ -356,7 +349,7 @@ class CargaEstudiantesService
 
         return DB::table('usuario_rol_sede')->insertGetId([
             'id_usuario'  => $idUsuario,
-            'id_rol'      => $this->idRolEstudiante,
+            'id_rol'      => $this->idRol,
             'id_sede'     => $idSede,
             'id_periodo'  => $this->idPeriodo,
             'estado'      => 'activo',
@@ -390,21 +383,15 @@ class CargaEstudiantesService
     private function normalizar(string $texto): string
     {
         $texto = mb_strtoupper(trim($texto));
-        // Quitar tildes y caracteres especiales
         $texto = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto);
-        // Colapsar espacios múltiples
         return preg_replace('/\s+/', ' ', $texto);
     }
 
-    /**
-     * Busca el mejor candidato en $opciones con similitud >= $umbral%.
-     * Devuelve la clave del candidato o null si ninguno supera el umbral.
-     */
     private function buscarFuzzy(string $entrada, array $opciones, float $umbral = 82.0): ?string
     {
         if (empty($opciones)) return null;
 
-        $mejorPct  = 0.0;
+        $mejorPct   = 0.0;
         $mejorClave = null;
 
         foreach ($opciones as $candidato) {
@@ -418,7 +405,6 @@ class CargaEstudiantesService
         return $mejorPct >= $umbral ? $mejorClave : null;
     }
 
-    /** Devuelve [primer_nombre, segundo_nombre|null] */
     private function partirNombre(string $texto): array
     {
         $partes = preg_split('/\s+/', trim($texto), 2);
@@ -432,10 +418,6 @@ class CargaEstudiantesService
     //  Reprocesar una sola fila (desde corrección manual)
     // ─────────────────────────────────────────────
 
-    /**
-     * Procesa una fila individual (usada al corregir una inconsistencia).
-     * Devuelve [true, null] en éxito o [false, 'mensaje de error'] en fallo.
-     */
     public function procesarFilaIndividual(
         int    $idPeriodo,
         string $documento,
@@ -447,13 +429,16 @@ class CargaEstudiantesService
         string $codigoPlan,
         string $nombrePrograma,
         string $nombreFacultad,
+        string $nombreRol = 'Estudiante',
     ): array {
-        $this->idPeriodo       = $idPeriodo;
-        $this->idRolEstudiante = (int) DB::table('rol')
-            ->where('nombre', 'Estudiante')
-            ->value('id_rol');
+        $this->idPeriodo = $idPeriodo;
+        $this->nombreRol = $nombreRol;
+        $this->idRol     = (int) DB::table('rol')->where('nombre', $nombreRol)->value('id_rol');
 
-        // Reiniciar caches para leer el estado actual de la BD
+        if (! $this->idRol) {
+            return [false, "El rol \"{$nombreRol}\" no existe en el sistema."];
+        }
+
         $this->sedeCache     = [];
         $this->facultadCache = [];
         $this->programaCache = [];
@@ -462,7 +447,6 @@ class CargaEstudiantesService
 
         $this->cargarCaches();
 
-        // Validar campos NOT NULL antes de intentar insertar
         $vacios = [];
         if (empty($documento))      $vacios[] = 'documento';
         if (empty($nombres))        $vacios[] = 'nombres';
@@ -506,6 +490,7 @@ class CargaEstudiantesService
 
     private function guardarInconsistencia(
         int    $idPeriodo,
+        string $nombreRol,
         int    $fila,
         string $documento,
         string $nombres,
@@ -521,6 +506,7 @@ class CargaEstudiantesService
         try {
             DB::table('carga_inconsistencia')->insert([
                 'id_periodo'      => $idPeriodo,
+                'nombre_rol'      => $nombreRol,
                 'fila'            => $fila,
                 'documento'       => $documento,
                 'nombres'         => $nombres,

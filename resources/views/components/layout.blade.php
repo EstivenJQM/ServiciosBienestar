@@ -226,9 +226,9 @@
                class="sidebar-link {{ request()->routeIs('usuarios.index') ? 'active' : '' }}">
                 <i class="bi bi-people-fill"></i> Lista de Usuarios
             </a>
-            <a href="{{ route('usuarios.carga-estudiantes.index') }}"
-               class="sidebar-link {{ request()->routeIs('usuarios.carga-estudiantes.*') ? 'active' : '' }}">
-                <i class="bi bi-person-fill-up"></i> Carga Estudiantes
+            <a href="{{ route('usuarios.carga.index') }}"
+               class="sidebar-link {{ request()->routeIs('usuarios.carga.*') ? 'active' : '' }}">
+                <i class="bi bi-person-fill-up"></i> Carga de Usuarios
             </a>
             @php $totalInc = \App\Models\CargaInconsistencia::count(); @endphp
             <a href="{{ route('usuarios.inconsistencias.index') }}"

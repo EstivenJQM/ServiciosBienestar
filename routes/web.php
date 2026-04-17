@@ -11,6 +11,7 @@ use App\Http\Controllers\ProgramaController;
 use App\Http\Controllers\PeriodoController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\CargaEstudiantesController;
+use App\Http\Controllers\CargaUsuariosController;
 use App\Http\Controllers\InconsistenciaController;
 use App\Http\Controllers\UsuarioController;
 
@@ -41,10 +42,14 @@ Route::put   ('usuarios/{usuario}',                   [UsuarioController::class,
 Route::delete('usuarios/{usuario}',                   [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 Route::delete('usuarios/{usuario}/roles/{rolSede}',   [UsuarioController::class, 'destroyRol'])->name('usuarios.roles.destroy');
 
-Route::get ('usuarios/carga-estudiantes',        [CargaEstudiantesController::class, 'index'])
+Route::get ('usuarios/carga', [CargaUsuariosController::class, 'index'])
+    ->name('usuarios.carga.index');
+Route::post('usuarios/carga', [CargaUsuariosController::class, 'store'])
+    ->name('usuarios.carga.store');
+
+// Ruta antigua — redirige a la nueva
+Route::get('usuarios/carga-estudiantes', fn() => redirect()->route('usuarios.carga.index'))
     ->name('usuarios.carga-estudiantes.index');
-Route::post('usuarios/carga-estudiantes',        [CargaEstudiantesController::class, 'store'])
-    ->name('usuarios.carga-estudiantes.store');
 
 // Inconsistencias de carga (definidas antes de rutas con {usuario})
 Route::get   ('usuarios/inconsistencias',                          [InconsistenciaController::class, 'index'])     ->name('usuarios.inconsistencias.index');

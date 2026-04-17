@@ -78,6 +78,7 @@
                         <tr>
                             <th style="width:55px" class="text-center">Fila</th>
                             <th>Período</th>
+                            <th>Rol</th>
                             <th>Documento</th>
                             <th>Nombre</th>
                             <th>Sede</th>
@@ -106,6 +107,13 @@
                                     default           => 'General',
                                 };
                             @endphp
+                            @php
+                                $rolBadge = match($inc->nombre_rol ?? 'Estudiante') {
+                                    'Graduado' => ['bg-success', 'bi-mortarboard-fill'],
+                                    'Docente'  => ['bg-info text-dark', 'bi-person-badge-fill'],
+                                    default    => ['bg-primary', 'bi-person-fill'],
+                                };
+                            @endphp
                             <tr>
                                 <td class="text-center text-muted small">
                                     {{ $inc->fila ?? '—' }}
@@ -120,6 +128,11 @@
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
+                                </td>
+                                <td class="small">
+                                    <span class="badge {{ $rolBadge[0] }}" style="font-size:.65rem">
+                                        <i class="bi {{ $rolBadge[1] }} me-1"></i>{{ $inc->nombre_rol ?? 'Estudiante' }}
+                                    </span>
                                 </td>
                                 <td class="small fw-semibold">{{ $inc->documento ?: '—' }}</td>
                                 <td class="small">

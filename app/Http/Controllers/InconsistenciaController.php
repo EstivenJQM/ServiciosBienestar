@@ -86,6 +86,7 @@ class InconsistenciaController extends Controller
             trim($request->codigo_plan),
             trim($request->nombre_programa),
             trim($request->nombre_facultad),
+            $inconsistencia->nombre_rol ?? 'Estudiante',
         );
 
         if ($ok) {

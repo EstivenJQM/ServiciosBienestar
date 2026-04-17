@@ -12,6 +12,7 @@ class CargaInconsistencia extends Model
 
     protected $fillable = [
         'id_periodo',
+        'nombre_rol',
         'documento',
         'nombres',
         'apellidos',
