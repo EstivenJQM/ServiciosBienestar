@@ -196,17 +196,9 @@ class CargaEstudiantesService
             return $this->facultadCache[$claveFuzzy];
         }
 
-        $nombreLimpio = mb_strtoupper(trim($nombre));
-        $id = DB::table('facultad')->insertGetId([
-            'nombre'     => $nombreLimpio,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $facultad = DB::table('facultad')->where('id_facultad', $id)->first();
-        $this->facultadCache[$normEntrada] = $facultad;
-
-        return $facultad;
+        throw new \RuntimeException(
+            "La facultad \"{$nombre}\" no existe en el sistema. Regístrela primero en el módulo de Facultades."
+        );
     }
 
     private function resolverFacultadSede(int $idFacultad, int $idSede): void
@@ -217,10 +209,12 @@ class CargaEstudiantesService
             ->exists();
 
         if (! $existe) {
-            DB::table('facultad_sede')->insert([
-                'id_facultad' => $idFacultad,
-                'id_sede'     => $idSede,
-            ]);
+            $nombreFacultad = DB::table('facultad')->where('id_facultad', $idFacultad)->value('nombre');
+            $nombreSede     = DB::table('sede')->where('id_sede', $idSede)->value('nombre');
+
+            throw new \RuntimeException(
+                "La facultad \"{$nombreFacultad}\" no tiene asignada la sede \"{$nombreSede}\". Asóciela en el módulo de Facultades."
+            );
         }
     }
 

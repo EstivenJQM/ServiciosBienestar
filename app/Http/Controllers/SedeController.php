@@ -7,10 +7,18 @@ use Illuminate\Http\Request;
 
 class SedeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sedes = Sede::orderBy('nombre')->get();
-        return view('sedes.index', compact('sedes'));
+        $busqueda = trim($request->get('busqueda', ''));
+
+        $sedes = Sede::when($busqueda, fn($q) => $q->where(function ($q) use ($busqueda) {
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                  ->orWhere('codigo', 'like', "%{$busqueda}%");
+            }))
+            ->orderBy('nombre')
+            ->get();
+
+        return view('sedes.index', compact('sedes', 'busqueda'));
     }
 
     public function create()
