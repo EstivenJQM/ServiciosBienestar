@@ -22,7 +22,7 @@
             </div>
 
             <button type="submit" class="btn btn-sibi">
-                <i class="bi bi-funnel me-1"></i>Filtrar
+                <i class="bi bi-search me-1"></i>Buscar
             </button>
 
             @if($busqueda)

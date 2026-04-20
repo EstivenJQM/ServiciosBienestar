@@ -8,13 +8,16 @@ use Illuminate\Http\Request;
 
 class FacultadController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busqueda = trim($request->get('busqueda', ''));
+
         $facultades = Facultad::with(['sedes' => fn($q) => $q->orderBy('nombre')])
+            ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
             ->orderBy('nombre')
             ->get();
 
-        return view('facultades.index', compact('facultades'));
+        return view('facultades.index', compact('facultades', 'busqueda'));
     }
 
     public function create()
