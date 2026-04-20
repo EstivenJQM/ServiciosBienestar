@@ -8,13 +8,18 @@ use Illuminate\Http\Request;
 
 class ComponenteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busqueda = trim($request->get('busqueda', ''));
+
         $componentes = Componente::with([
             'area',
             'lineas'                => fn($q) => $q->orderBy('nombre'),
             'lineas.tiposActividad' => fn($q) => $q->orderBy('nombre'),
         ])
+            ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%")
+                ->orWhereHas('area', fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
+            )
             ->orderBy('id_area')
             ->orderBy('nombre')
             ->get()
@@ -22,7 +27,7 @@ class ComponenteController extends Controller
 
         $areas = Area::orderBy('nombre')->get()->keyBy('id_area');
 
-        return view('componentes.index', compact('componentes', 'areas'));
+        return view('componentes.index', compact('componentes', 'areas', 'busqueda'));
     }
 
     public function create()

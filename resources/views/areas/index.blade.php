@@ -7,6 +7,30 @@
         </a>
     </div>
 
+    {{-- Búsqueda --}}
+    <form method="GET" action="{{ route('areas.index') }}" class="mb-3">
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+            <div class="input-group" style="max-width:400px">
+                <span class="input-group-text bg-white">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" name="busqueda" value="{{ $busqueda }}"
+                       class="form-control"
+                       placeholder="Nombre del área…">
+            </div>
+
+            <button type="submit" class="btn btn-sibi">
+                <i class="bi bi-search me-1"></i>Buscar
+            </button>
+
+            @if($busqueda)
+                <a href="{{ route('areas.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Limpiar
+                </a>
+            @endif
+        </div>
+    </form>
+
     @forelse($areas as $area)
         <x-areas.tree-item :area="$area" />
     @empty

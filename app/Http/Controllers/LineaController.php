@@ -10,9 +10,14 @@ use Illuminate\Validation\Rule;
 
 class LineaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busqueda = trim($request->get('busqueda', ''));
+
         $lineas = Linea::with(['componente.area', 'tiposActividad' => fn($q) => $q->orderBy('nombre')])
+            ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%")
+                ->orWhereHas('componente', fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
+            )
             ->orderBy('id_componente')
             ->orderBy('nombre')
             ->get()
@@ -24,7 +29,7 @@ class LineaController extends Controller
             ->get()
             ->keyBy('id_componente');
 
-        return view('lineas.index', compact('lineas', 'componentes'));
+        return view('lineas.index', compact('lineas', 'componentes', 'busqueda'));
     }
 
     public function create()

@@ -7,17 +7,20 @@ use Illuminate\Http\Request;
 
 class AreaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busqueda = trim($request->get('busqueda', ''));
+
         $areas = Area::with([
                 'componentes'                        => fn($q) => $q->orderBy('nombre'),
                 'componentes.lineas'                 => fn($q) => $q->orderBy('nombre'),
                 'componentes.lineas.tiposActividad'  => fn($q) => $q->orderBy('nombre'),
             ])
+            ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
             ->orderBy('nombre')
             ->get();
 
-        return view('areas.index', compact('areas'));
+        return view('areas.index', compact('areas', 'busqueda'));
     }
 
     public function create()

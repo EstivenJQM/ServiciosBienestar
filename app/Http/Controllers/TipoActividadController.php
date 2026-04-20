@@ -8,15 +8,18 @@ use Illuminate\Http\Request;
 
 class TipoActividadController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busqueda = trim($request->get('busqueda', ''));
+
         $tiposActividad = TipoActividad::with([
             'lineas.componente.area',
         ])
+            ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
             ->orderBy('nombre')
             ->get();
 
-        return view('tipo_actividad.index', compact('tiposActividad'));
+        return view('tipo_actividad.index', compact('tiposActividad', 'busqueda'));
     }
 
     public function create()

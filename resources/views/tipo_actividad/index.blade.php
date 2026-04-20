@@ -9,6 +9,30 @@
         </a>
     </div>
 
+    {{-- Búsqueda --}}
+    <form method="GET" action="{{ route('tipo-actividad.index') }}" class="mb-3">
+        <div class="d-flex flex-wrap gap-2 align-items-end">
+            <div class="input-group" style="max-width:400px">
+                <span class="input-group-text bg-white">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input type="text" name="busqueda" value="{{ $busqueda }}"
+                       class="form-control"
+                       placeholder="Nombre del tipo de actividad…">
+            </div>
+
+            <button type="submit" class="btn btn-sibi">
+                <i class="bi bi-search me-1"></i>Buscar
+            </button>
+
+            @if($busqueda)
+                <a href="{{ route('tipo-actividad.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Limpiar
+                </a>
+            @endif
+        </div>
+    </form>
+
     @forelse($tiposActividad as $tipo)
         @php $tipoId = 'tipo-' . $tipo->id_tipo_actividad; @endphp
 
