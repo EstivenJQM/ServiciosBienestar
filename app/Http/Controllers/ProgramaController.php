@@ -12,14 +12,19 @@ use Illuminate\Support\Facades\DB;
 
 class ProgramaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $busqueda = trim($request->get('busqueda', ''));
+
         $programas = Programa::with([
             'facultad',
             'tipoFormacion.nivel',
             'sedes' => fn($q) => $q->orderBy('nombre'),
             'programaSedes.planesEstudio',
         ])
+            ->when($busqueda, fn($q) => $q->where('nombre', 'like', "%{$busqueda}%")
+                ->orWhereHas('facultad', fn($q) => $q->where('nombre', 'like', "%{$busqueda}%"))
+            )
             ->orderBy('id_facultad')
             ->orderBy('nombre')
             ->get()
@@ -27,7 +32,7 @@ class ProgramaController extends Controller
 
         $facultades = Facultad::orderBy('nombre')->get()->keyBy('id_facultad');
 
-        return view('programas.index', compact('programas', 'facultades'));
+        return view('programas.index', compact('programas', 'facultades', 'busqueda'));
     }
 
     public function create()
