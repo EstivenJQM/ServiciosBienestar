@@ -84,7 +84,7 @@
                                     </td>
 
                                     {{-- Nombre --}}
-                                    <td>
+                                    <td class="text-center">
                                         <a href="{{ route('servicios.show', $servicio) }}"
                                            class="fw-semibold text-decoration-none"
                                            style="color:#196844">
@@ -93,8 +93,8 @@
                                     </td>
 
                                     {{-- Línea + Tipo de actividad --}}
-                                    <td>
-                                        <div class="d-flex flex-wrap gap-1 align-items-center">
+                                    <td class="text-center">
+                                        <div class="d-flex flex-wrap gap-1 align-items-center justify-content-center">
                                             <span class="badge" style="background-color:#20c997;font-size:.68rem">
                                                 {{ $servicio->linea->nombre }}
                                             </span>
@@ -110,7 +110,7 @@
                                     </td>
 
                                     {{-- Sede --}}
-                                    <td>
+                                    <td class="text-center">
                                         <span class="badge bg-secondary" style="font-size:.68rem">
                                             {{ $servicio->sede->codigo }}
                                         </span>
