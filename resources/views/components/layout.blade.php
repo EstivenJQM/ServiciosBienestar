@@ -3,7 +3,7 @@
 @php
     $seccionActiva = match(true) {
         request()->routeIs('areas.*', 'componentes.*', 'lineas.*', 'tipo-actividad.*') => 'caracterizacion',
-        request()->routeIs('sedes.*', 'facultades.*', 'programas.*') => 'academico',
+        request()->routeIs('sedes.*', 'facultades.*', 'programas.*', 'dependencias.*') => 'academico',
         request()->routeIs('servicios.*', 'periodos.*') => 'servicios',
         request()->routeIs('usuarios.*')   => 'usuarios',
         default => null,
@@ -218,6 +218,10 @@
             <a href="{{ route('programas.index') }}"
                class="sidebar-link {{ request()->routeIs('programas.*') ? 'active' : '' }}">
                 <i class="bi bi-journal-bookmark-fill"></i> Programas
+            </a>
+            <a href="{{ route('dependencias.index') }}"
+               class="sidebar-link {{ request()->routeIs('dependencias.*') ? 'active' : '' }}">
+                <i class="bi bi-diagram-3-fill"></i> Dependencias
             </a>
 
         @elseif($seccionActiva === 'usuarios')

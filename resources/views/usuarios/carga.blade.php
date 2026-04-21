@@ -22,27 +22,33 @@
                         <div class="d-flex gap-2 flex-wrap">
 
                             <div class="rol-card flex-fill p-3 rounded border text-center"
-                                 data-rol="Estudiante" data-tipo="directo" style="cursor:pointer;min-width:110px">
+                                 data-rol="Estudiante" data-tipo="directo" style="cursor:pointer">
                                 <i class="bi bi-person-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Estudiante</span>
                             </div>
 
                             <div class="rol-card flex-fill p-3 rounded border text-center"
-                                 data-rol="Graduado" data-tipo="directo" style="cursor:pointer;min-width:110px">
+                                 data-rol="Graduado" data-tipo="directo" style="cursor:pointer">
                                 <i class="bi bi-mortarboard-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Graduado</span>
                             </div>
 
                             <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
-                                 data-rol="Docente" data-tipo="subselector" style="cursor:pointer;min-width:110px">
+                                 data-rol="Docente" data-tipo="subselector" style="cursor:pointer">
                                 <i class="bi bi-person-badge-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Docente</span>
                             </div>
 
                             <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
-                                 data-rol="Empleado" data-tipo="subselector" style="cursor:pointer;min-width:110px">
+                                 data-rol="Empleado" data-tipo="subselector" style="cursor:pointer">
                                 <i class="bi bi-briefcase-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Empleado</span>
+                            </div>
+
+                            <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
+                                 data-rol="Familiar" data-tipo="directo" style="cursor:pointer">
+                                <i class="bi bi-house-heart-fill fs-3 d-block mb-1"></i>
+                                <span class="small fw-semibold">Familiar</span>
                             </div>
 
                         </div>
@@ -163,6 +169,20 @@
                         </p>
                     </div>
 
+                    {{-- Formato: Familiar --}}
+                    <div class="alert alert-light border mb-3 d-none" id="formato-familiar">
+                        <p class="small fw-semibold mb-1">
+                            <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
+                        </p>
+                        <code class="small d-block text-wrap" style="font-size:.72rem">
+                            DOCUMENTO ; NOMBRES ; APELLIDOS ; CORREO ; NOMBRE SEDE
+                        </code>
+                        <p class="small text-muted mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+                            La <strong>SEDE</strong> se busca por nombre.
+                        </p>
+                    </div>
+
                     {{-- Formato: Contratista --}}
                     <div class="alert alert-light border mb-3 d-none" id="formato-contratista">
                         <p class="small fw-semibold mb-1">
@@ -257,13 +277,14 @@
         const nombreRolInput    = document.getElementById('nombre_rol');
         const btnProcesar       = document.getElementById('btn-procesar');
         const lblRol            = document.getElementById('lbl-rol');
-        const camposCarga       = document.getElementById('campos-carga');
-        const campoArchivo      = document.getElementById('campo-archivo');
-        const formatoEstudiante = document.getElementById('formato-estudiante');
-        const formatoContratista= document.getElementById('formato-contratista');
-        const tipoDocenteSec    = document.getElementById('tipo-docente-section');
-        const tipoEmpleadoSec   = document.getElementById('tipo-empleado-section');
-        const proximamenteAdmin = document.getElementById('proximamente-admin');
+        const camposCarga        = document.getElementById('campos-carga');
+        const campoArchivo       = document.getElementById('campo-archivo');
+        const formatoEstudiante  = document.getElementById('formato-estudiante');
+        const formatoContratista = document.getElementById('formato-contratista');
+        const formatoFamiliar    = document.getElementById('formato-familiar');
+        const tipoDocenteSec     = document.getElementById('tipo-docente-section');
+        const tipoEmpleadoSec    = document.getElementById('tipo-empleado-section');
+        const proximamenteAdmin  = document.getElementById('proximamente-admin');
 
         function ocultarTodo() {
             tipoDocenteSec.classList.add('d-none');
@@ -273,8 +294,16 @@
             campoArchivo.classList.add('d-none');
             formatoEstudiante.classList.add('d-none');
             formatoContratista.classList.add('d-none');
+            formatoFamiliar.classList.add('d-none');
             btnProcesar.classList.add('d-none');
         }
+
+        const formatoPorRol = {
+            'Estudiante':  formatoEstudiante,
+            'Graduado':    formatoEstudiante,
+            'Familiar':    formatoFamiliar,
+            'Contratista': formatoContratista,
+        };
 
         function seleccionarRol(rol) {
             rolCards.forEach(c => {
@@ -296,11 +325,10 @@
             } else if (rol === 'Empleado') {
                 tipoEmpleadoSec.classList.remove('d-none');
             } else {
-                // Estudiante / Graduado
                 nombreRolInput.value = rol;
                 camposCarga.classList.remove('d-none');
                 campoArchivo.classList.remove('d-none');
-                formatoEstudiante.classList.remove('d-none');
+                (formatoPorRol[rol] ?? formatoEstudiante).classList.remove('d-none');
                 btnProcesar.classList.remove('d-none');
             }
         }

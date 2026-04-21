@@ -121,7 +121,7 @@
                         </div>
                     </div>
 
-                    @if($inconsistencia->nombre_rol === 'Contratista')
+                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Familiar']))
 
                     {{-- ── Sede (contratista: por nombre) ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
@@ -156,7 +156,8 @@
                         </div>
                     </div>
 
-                    {{-- ── Dependencia ── --}}
+                    @if($inconsistencia->nombre_rol === 'Contratista')
+                    {{-- ── Dependencia (solo contratistas) ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
                         <i class="bi bi-diagram-3 me-1"></i>Dependencia
                         @if($campo === 'dependencia')
@@ -179,8 +180,11 @@
                             @enderror
                         </div>
                     </div>
+                    @else
+                    <input type="hidden" name="dependencia" value="">
+                    @endif
 
-                    {{-- Campos ocultos no usados por contratistas --}}
+                    {{-- Campos ocultos no usados --}}
                     <input type="hidden" name="codigo_sede"     value="">
                     <input type="hidden" name="codigo_plan"     value="">
                     <input type="hidden" name="nombre_programa" value="">

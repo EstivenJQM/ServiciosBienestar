@@ -7,6 +7,7 @@ use App\Models\Periodo;
 use App\Models\Sede;
 use App\Services\CargaEstudiantesService;
 use App\Services\CargaContratistasService;
+use App\Services\CargaFamiliaresService;
 use Illuminate\Http\Request;
 
 class InconsistenciaController extends Controller
@@ -43,9 +44,11 @@ class InconsistenciaController extends Controller
         Request $request,
         CargaInconsistencia      $inconsistencia,
         CargaEstudiantesService  $estudiantesService,
-        CargaContratistasService $contratistasService
+        CargaContratistasService $contratistasService,
+        CargaFamiliaresService   $familiaresService
     ) {
         $esContratista = ($inconsistencia->nombre_rol === 'Contratista');
+        $esFamiliar    = ($inconsistencia->nombre_rol === 'Familiar');
 
         if ($esContratista) {
             $request->validate([
@@ -64,6 +67,22 @@ class InconsistenciaController extends Controller
                 'email.required'       => 'El correo es obligatorio.',
                 'nombre_sede.required' => 'La sede es obligatoria.',
                 'dependencia.required' => 'La dependencia es obligatoria.',
+            ]);
+        } elseif ($esFamiliar) {
+            $request->validate([
+                'id_periodo'  => 'required|exists:periodo,id_periodo',
+                'documento'   => 'required|string|max:20',
+                'nombres'     => 'required|string|max:100',
+                'apellidos'   => 'required|string|max:100',
+                'email'       => 'required|string|max:100',
+                'nombre_sede' => 'required|string|max:100',
+            ], [
+                'id_periodo.required'  => 'Seleccione un período.',
+                'documento.required'   => 'El documento es obligatorio.',
+                'nombres.required'     => 'Los nombres son obligatorios.',
+                'apellidos.required'   => 'Los apellidos son obligatorios.',
+                'email.required'       => 'El correo es obligatorio.',
+                'nombre_sede.required' => 'La sede es obligatoria.',
             ]);
         } else {
             $request->validate([
@@ -97,6 +116,11 @@ class InconsistenciaController extends Controller
                 'id_periodo', 'documento', 'nombres', 'apellidos',
                 'email', 'nombre_sede', 'dependencia',
             ]));
+        } elseif ($esFamiliar) {
+            $inconsistencia->fill($request->only([
+                'id_periodo', 'documento', 'nombres', 'apellidos',
+                'email', 'nombre_sede',
+            ]));
         } else {
             $inconsistencia->fill($request->only([
                 'id_periodo', 'documento', 'nombres', 'apellidos', 'email',
@@ -114,6 +138,15 @@ class InconsistenciaController extends Controller
                 trim($request->email ?? ''),
                 trim($request->nombre_sede),
                 trim($request->dependencia),
+            );
+        } elseif ($esFamiliar) {
+            [$ok, $error] = $familiaresService->procesarFilaIndividual(
+                (int) $request->id_periodo,
+                trim($request->documento),
+                trim($request->nombres),
+                trim($request->apellidos),
+                trim($request->email ?? ''),
+                trim($request->nombre_sede),
             );
         } else {
             [$ok, $error] = $estudiantesService->procesarFilaIndividual(
