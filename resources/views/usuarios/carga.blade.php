@@ -19,34 +19,34 @@
                             Tipo de usuario <span class="text-danger">*</span>
                         </label>
 
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2" style="overflow-x:auto;padding-bottom:2px">
 
-                            <div class="rol-card flex-fill p-3 rounded border text-center"
-                                 data-rol="Estudiante" data-tipo="directo" style="cursor:pointer">
+                            <div class="rol-card p-3 rounded border text-center"
+                                 data-rol="Estudiante" data-tipo="directo" style="cursor:pointer;flex:1 1 0;min-width:110px">
                                 <i class="bi bi-person-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Estudiante</span>
                             </div>
 
-                            <div class="rol-card flex-fill p-3 rounded border text-center"
-                                 data-rol="Graduado" data-tipo="directo" style="cursor:pointer">
+                            <div class="rol-card p-3 rounded border text-center"
+                                 data-rol="Graduado" data-tipo="directo" style="cursor:pointer;flex:1 1 0;min-width:110px">
                                 <i class="bi bi-mortarboard-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Graduado</span>
                             </div>
 
-                            <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
-                                 data-rol="Docente" data-tipo="subselector" style="cursor:pointer">
+                            <div class="rol-card p-3 rounded border text-center"
+                                 data-rol="Docente" data-tipo="subselector" style="cursor:pointer;flex:1 1 0;min-width:110px">
                                 <i class="bi bi-person-badge-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Docente</span>
                             </div>
 
-                            <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
-                                 data-rol="Empleado" data-tipo="subselector" style="cursor:pointer">
+                            <div class="rol-card p-3 rounded border text-center"
+                                 data-rol="Empleado" data-tipo="subselector" style="cursor:pointer;flex:1 1 0;min-width:110px">
                                 <i class="bi bi-briefcase-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Empleado</span>
                             </div>
 
-                            <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
-                                 data-rol="Familiar" data-tipo="directo" style="cursor:pointer">
+                            <div class="rol-card p-3 rounded border text-center"
+                                 data-rol="Familiar" data-tipo="directo" style="cursor:pointer;flex:1 1 0;min-width:110px">
                                 <i class="bi bi-house-heart-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Familiar</span>
                             </div>
@@ -306,15 +306,8 @@
         };
 
         function seleccionarRol(rol) {
-            rolCards.forEach(c => {
-                c.classList.remove('sibi-selected');
-                c.classList.add('text-muted');
-            });
-            const card = document.querySelector(`.rol-card[data-rol="${rol}"]`);
-            if (card) {
-                card.classList.add('sibi-selected');
-                card.classList.remove('text-muted');
-            }
+            rolCards.forEach(c => c.classList.remove('sibi-selected'));
+            document.querySelector(`.rol-card[data-rol="${rol}"]`)?.classList.add('sibi-selected');
 
             ocultarTodo();
             nombreRolInput.value = '';
