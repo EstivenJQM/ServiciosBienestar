@@ -46,15 +46,23 @@
                 </div>
 
                 <x-card :padding="false">
-                    <table class="table table-hover table-sm mb-0 align-middle">
+                    <table class="table table-hover table-sm mb-0 align-middle" style="table-layout:fixed;width:100%">
+                        <colgroup>
+                            <col style="width:55px">
+                            <col style="width:18%">
+                            <col style="width:38%">
+                            <col style="width:24%">
+                            <col style="width:80px">
+                            <col style="width:110px">
+                        </colgroup>
                         <thead class="table-light">
                             <tr>
-                                <th style="width:42px"></th>
+                                <th></th>
                                 <th>Nombre</th>
                                 <th>Línea / Tipo</th>
                                 <th>Sede</th>
-                                <th style="width:90px" class="text-center">Usuarios</th>
-                                <th style="width:100px" class="text-end">Acciones</th>
+                                <th class="text-center">Usuarios</th>
+                                <th class="text-end">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
