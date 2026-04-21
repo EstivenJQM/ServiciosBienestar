@@ -25,6 +25,8 @@ class UsuarioController extends Controller
             'rolesEnSedes.sede',
             'rolesEnSedes.periodo',
             'rolesEnSedes.estudianteEgresado.planEstudio.programaSede.programa.facultad',
+            'rolesEnSedes.empleado.tipoEmpleado',
+            'rolesEnSedes.empleado.contratista.dependencia',
         ]);
 
         if ($busqueda !== '') {
@@ -122,9 +124,10 @@ class UsuarioController extends Controller
     public function destroy(Usuario $usuario)
     {
         DB::transaction(function () use ($usuario) {
-            // Eliminar estudiante_egresado → usuario_rol_sede → usuario
             foreach ($usuario->rolesEnSedes as $urs) {
                 $urs->estudianteEgresado?->delete();
+                $urs->empleado?->contratista?->delete();
+                $urs->empleado?->delete();
             }
             $usuario->rolesEnSedes()->delete();
             $usuario->delete();
@@ -139,6 +142,8 @@ class UsuarioController extends Controller
         abort_if($rolSede->id_usuario !== $usuario->id_usuario, 403);
 
         $rolSede->estudianteEgresado?->delete();
+        $rolSede->empleado?->contratista?->delete();
+        $rolSede->empleado?->delete();
         $rolSede->delete();
 
         return back()->with('success', 'Rol eliminado correctamente.');

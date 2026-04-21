@@ -178,17 +178,28 @@
                             @foreach($urs as $entry)
                                 @php
                                     $esEstudiante = in_array($entry->rol?->nombre, ['Estudiante', 'Graduado']);
+                                    $tipoEmpNombre = $entry->empleado?->tipoEmpleado?->nombre;
                                     $rolColor = match($entry->rol?->nombre) {
                                         'Estudiante' => '#196844',
                                         'Graduado'   => '#0d6efd',
-                                        'Empleado'   => '#856404',
-                                        default      => '#6c757d',
+                                        'Empleado'   => match($tipoEmpNombre) {
+                                            'Contratista'    => '#6f42c1',
+                                            'Administrativo' => '#0d6efd',
+                                            'Docente'        => '#856404',
+                                            default          => '#856404',
+                                        },
+                                        default => '#6c757d',
                                     };
                                     $rolBg = match($entry->rol?->nombre) {
                                         'Estudiante' => '#e6f2ec',
                                         'Graduado'   => '#e7f0ff',
-                                        'Empleado'   => '#fff8e1',
-                                        default      => '#f3f4f6',
+                                        'Empleado'   => match($tipoEmpNombre) {
+                                            'Contratista'    => '#f3eeff',
+                                            'Administrativo' => '#e7f0ff',
+                                            'Docente'        => '#fff8e1',
+                                            default          => '#fff8e1',
+                                        },
+                                        default => '#f3f4f6',
                                     };
                                     $bs = 'd-inline-flex align-items-center px-2 py-0 gap-1';
                                     $bh = 'height:1.6rem;font-size:.7rem';
@@ -238,6 +249,24 @@
                                         @if($facultad)
                                             <span class="badge {{ $bs }}" style="{{ $bh }};background-color:#6f42c1">
                                                 <i class="bi bi-building"></i>{{ $facultad->nombre }}
+                                            </span>
+                                        @endif
+                                    @endif
+
+                                    @if($entry->rol?->nombre === 'Empleado' && $entry->empleado)
+                                        @php
+                                            $tipoEmp     = $entry->empleado->tipoEmpleado;
+                                            $contratista = $entry->empleado->contratista;
+                                        @endphp
+                                        <span class="vr mx-1 align-self-center"></span>
+                                        @if($tipoEmp)
+                                            <span class="badge {{ $bs }}" style="{{ $bh }};background-color:#fd7e14">
+                                                <i class="bi bi-briefcase"></i>{{ $tipoEmp->nombre }}
+                                            </span>
+                                        @endif
+                                        @if($contratista?->dependencia)
+                                            <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
+                                                <i class="bi bi-diagram-3"></i>{{ $contratista->dependencia->nombre }}
                                             </span>
                                         @endif
                                     @endif
