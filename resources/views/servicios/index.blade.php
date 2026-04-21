@@ -58,11 +58,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th></th>
-                                <th>Nombre</th>
-                                <th>Línea / Tipo</th>
-                                <th>Sede</th>
+                                <th class="text-center">Nombre</th>
+                                <th class="text-center">Línea / Tipo</th>
+                                <th class="text-center">Sede</th>
                                 <th class="text-center">Usuarios</th>
-                                <th class="text-end">Acciones</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
