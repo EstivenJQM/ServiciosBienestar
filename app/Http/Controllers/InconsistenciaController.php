@@ -187,14 +187,10 @@ class InconsistenciaController extends Controller
 
     public function destroyAll(Request $request)
     {
-        $query = CargaInconsistencia::query();
+        $idPeriodo = $request->id_periodo;
 
-        if ($request->id_periodo) {
-            $query->where('id_periodo', $request->id_periodo);
-        }
-
-        $count = $query->count();
-        $query->delete();
+        $count = CargaInconsistencia::when($idPeriodo, fn($q) => $q->where('id_periodo', $idPeriodo))->count();
+        CargaInconsistencia::when($idPeriodo, fn($q) => $q->where('id_periodo', $idPeriodo))->delete();
 
         return redirect()->route('usuarios.inconsistencias.index')
             ->with('success', "{$count} inconsistencia(s) eliminada(s).");

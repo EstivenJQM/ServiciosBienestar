@@ -40,24 +40,23 @@ Route::resource('servicios', ServicioController::class);
 Route::post  ('servicios/{servicio}/usuarios',      [ServicioController::class, 'asignarUsuarios'])   ->name('servicios.usuarios.store');
 Route::delete('servicios/{servicio}/usuarios/{urs}', [ServicioController::class, 'desasignarUsuario'])->name('servicios.usuarios.destroy');
 
-Route::get   ('usuarios',                              [UsuarioController::class, 'index'])  ->name('usuarios.index');
-Route::get   ('usuarios/{usuario}/edit',              [UsuarioController::class, 'edit'])   ->name('usuarios.edit');
-Route::put   ('usuarios/{usuario}',                   [UsuarioController::class, 'update']) ->name('usuarios.update');
-Route::delete('usuarios/{usuario}',                   [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
-Route::delete('usuarios/{usuario}/roles/{rolSede}',   [UsuarioController::class, 'destroyRol'])->name('usuarios.roles.destroy');
-
+// Rutas estáticas de usuarios (antes de las rutas con parámetros {usuario})
 Route::get ('usuarios/carga', [CargaUsuariosController::class, 'index'])
     ->name('usuarios.carga.index');
 Route::post('usuarios/carga', [CargaUsuariosController::class, 'store'])
     ->name('usuarios.carga.store');
 
-// Ruta antigua — redirige a la nueva
 Route::get('usuarios/carga-estudiantes', fn() => redirect()->route('usuarios.carga.index'))
     ->name('usuarios.carga-estudiantes.index');
 
-// Inconsistencias de carga (definidas antes de rutas con {usuario})
 Route::get   ('usuarios/inconsistencias',                          [InconsistenciaController::class, 'index'])     ->name('usuarios.inconsistencias.index');
 Route::get   ('usuarios/inconsistencias/{inconsistencia}/edit',    [InconsistenciaController::class, 'edit'])      ->name('usuarios.inconsistencias.edit');
 Route::put   ('usuarios/inconsistencias/{inconsistencia}',         [InconsistenciaController::class, 'update'])    ->name('usuarios.inconsistencias.update');
 Route::delete('usuarios/inconsistencias/{inconsistencia}',         [InconsistenciaController::class, 'destroy'])   ->name('usuarios.inconsistencias.destroy');
 Route::delete('usuarios/inconsistencias',                          [InconsistenciaController::class, 'destroyAll'])->name('usuarios.inconsistencias.destroy-all');
+
+Route::get   ('usuarios',                              [UsuarioController::class, 'index'])  ->name('usuarios.index');
+Route::get   ('usuarios/{usuario}/edit',              [UsuarioController::class, 'edit'])   ->name('usuarios.edit');
+Route::put   ('usuarios/{usuario}',                   [UsuarioController::class, 'update']) ->name('usuarios.update');
+Route::delete('usuarios/{usuario}',                   [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
+Route::delete('usuarios/{usuario}/roles/{rolSede}',   [UsuarioController::class, 'destroyRol'])->name('usuarios.roles.destroy');
