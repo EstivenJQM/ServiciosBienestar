@@ -121,7 +121,74 @@
                         </div>
                     </div>
 
-                    {{-- ── Sede ── --}}
+                    @if($inconsistencia->nombre_rol === 'Contratista')
+
+                    {{-- ── Sede (contratista: por nombre) ── --}}
+                    <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
+                        <i class="bi bi-geo-alt me-1"></i>Sede
+                        @if($campo === 'nombre_sede')
+                            <span class="badge bg-danger ms-1" style="font-size:.65rem">
+                                <i class="bi bi-exclamation-circle me-1"></i>Campo con error
+                            </span>
+                        @endif
+                    </p>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-12">
+                            <label class="form-label small fw-semibold">
+                                Sede <span class="text-danger">*</span>
+                            </label>
+                            <select name="nombre_sede"
+                                    class="form-select form-select-sm
+                                           {{ $campo === 'nombre_sede' ? 'is-invalid border-danger' : '' }}
+                                           {{ $errors->has('nombre_sede') ? 'is-invalid' : '' }}">
+                                <option value="">— Seleccione una sede —</option>
+                                @foreach($sedes as $sede)
+                                    <option value="{{ $sede->nombre }}"
+                                        {{ old('nombre_sede', $inconsistencia->nombre_sede) === $sede->nombre ? 'selected' : '' }}>
+                                        {{ $sede->nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('nombre_sede')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- ── Dependencia ── --}}
+                    <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
+                        <i class="bi bi-diagram-3 me-1"></i>Dependencia
+                        @if($campo === 'dependencia')
+                            <span class="badge bg-danger ms-1" style="font-size:.65rem">
+                                <i class="bi bi-exclamation-circle me-1"></i>Campo con error
+                            </span>
+                        @endif
+                    </p>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-12">
+                            <input type="text" name="dependencia"
+                                   value="{{ old('dependencia', $inconsistencia->dependencia) }}"
+                                   maxlength="200"
+                                   class="form-control form-control-sm
+                                          {{ $campo === 'dependencia' ? 'border-danger' : '' }}
+                                          {{ $errors->has('dependencia') ? 'is-invalid' : '' }}">
+                            @error('dependencia')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    {{-- Campos ocultos no usados por contratistas --}}
+                    <input type="hidden" name="codigo_sede"     value="">
+                    <input type="hidden" name="codigo_plan"     value="">
+                    <input type="hidden" name="nombre_programa" value="">
+                    <input type="hidden" name="nombre_facultad" value="">
+
+                    @else
+
+                    {{-- ── Sede (estudiante/graduado: por código) ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
                         <i class="bi bi-geo-alt me-1"></i>Sede
                         @if($campo === 'codigo_sede')
@@ -232,6 +299,11 @@
                             @enderror
                         </div>
                     </div>
+
+                    {{-- Campo oculto no usado por estudiantes --}}
+                    <input type="hidden" name="dependencia" value="">
+
+                    @endif
 
                     {{-- ── Acciones ── --}}
                     <div class="d-flex gap-2 mt-4">

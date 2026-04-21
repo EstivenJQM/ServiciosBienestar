@@ -19,6 +19,7 @@ class CargaInconsistencia extends Model
         'email',
         'codigo_sede',
         'nombre_sede',
+        'dependencia',
         'codigo_plan',
         'nombre_programa',
         'nombre_facultad',
@@ -40,13 +41,14 @@ class CargaInconsistencia extends Model
         $e = mb_strtolower($this->error);
 
         return match(true) {
-            str_contains($e, 'sede')      => 'codigo_sede',
-            str_contains($e, 'facultad')  => 'nombre_facultad',
-            str_contains($e, 'programa')  => 'nombre_programa',
-            str_contains($e, 'plan')      => 'codigo_plan',
-            str_contains($e, 'documento') => 'documento',
+            str_contains($e, 'dependencia') => 'dependencia',
+            str_contains($e, 'sede')        => $this->nombre_rol === 'Contratista' ? 'nombre_sede' : 'codigo_sede',
+            str_contains($e, 'facultad')    => 'nombre_facultad',
+            str_contains($e, 'programa')    => 'nombre_programa',
+            str_contains($e, 'plan')        => 'codigo_plan',
+            str_contains($e, 'documento')   => 'documento',
             str_contains($e, 'email') || str_contains($e, 'correo') => 'email',
-            default                       => null,
+            default                         => null,
         };
     }
 }

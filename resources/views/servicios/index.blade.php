@@ -59,7 +59,7 @@
                             <tr>
                                 <th></th>
                                 <th class="text-center">Nombre</th>
-                                <th class="text-center">Línea / Tipo</th>
+                                <th class="text-center">Línea / Tipo Actividad</th>
                                 <th class="text-center">Sede</th>
                                 <th class="text-center">Usuarios</th>
                                 <th class="text-center">Acciones</th>

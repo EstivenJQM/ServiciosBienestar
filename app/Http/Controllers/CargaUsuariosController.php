@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Services\CargaEstudiantesService;
+use App\Services\CargaContratistasService;
 use App\Models\Periodo;
 use Illuminate\Http\Request;
 
 class CargaUsuariosController extends Controller
 {
-    private const ROLES_CON_PLAN = ['Estudiante', 'Graduado'];
-
     public function index()
     {
         $periodos = Periodo::orderByDesc('nombre')->get();
@@ -17,10 +16,13 @@ class CargaUsuariosController extends Controller
         return view('usuarios.carga', compact('periodos'));
     }
 
-    public function store(Request $request, CargaEstudiantesService $service)
-    {
+    public function store(
+        Request $request,
+        CargaEstudiantesService  $estudiantesService,
+        CargaContratistasService $contratistasService
+    ) {
         $request->validate([
-            'nombre_rol' => 'required|in:Estudiante,Graduado',
+            'nombre_rol' => 'required|in:Estudiante,Graduado,Contratista',
             'id_periodo' => 'required|exists:periodo,id_periodo',
             'archivo'    => 'required|file|mimes:csv,txt|max:20480',
         ], [
@@ -33,14 +35,23 @@ class CargaUsuariosController extends Controller
             'archivo.max'         => 'El archivo no debe superar los 20 MB.',
         ]);
 
-        $resultado = $service->cargar(
-            $request->file('archivo'),
-            (int) $request->id_periodo,
-            $request->nombre_rol
-        );
+        $rol = $request->nombre_rol;
+
+        if ($rol === 'Contratista') {
+            $resultado = $contratistasService->cargar(
+                $request->file('archivo'),
+                (int) $request->id_periodo
+            );
+        } else {
+            $resultado = $estudiantesService->cargar(
+                $request->file('archivo'),
+                (int) $request->id_periodo,
+                $rol
+            );
+        }
 
         return back()
             ->with('resultado', $resultado)
-            ->with('nombre_rol', $request->nombre_rol);
+            ->with('nombre_rol', $rol);
     }
 }

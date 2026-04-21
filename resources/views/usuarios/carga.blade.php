@@ -22,21 +22,27 @@
                         <div class="d-flex gap-2 flex-wrap">
 
                             <div class="rol-card flex-fill p-3 rounded border text-center"
-                                 data-rol="Estudiante" data-implementado="1" style="cursor:pointer;min-width:110px">
+                                 data-rol="Estudiante" data-tipo="directo" style="cursor:pointer;min-width:110px">
                                 <i class="bi bi-person-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Estudiante</span>
                             </div>
 
                             <div class="rol-card flex-fill p-3 rounded border text-center"
-                                 data-rol="Graduado" data-implementado="1" style="cursor:pointer;min-width:110px">
+                                 data-rol="Graduado" data-tipo="directo" style="cursor:pointer;min-width:110px">
                                 <i class="bi bi-mortarboard-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Graduado</span>
                             </div>
 
                             <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
-                                 data-rol="Docente" data-implementado="0" style="cursor:pointer;min-width:110px">
+                                 data-rol="Docente" data-tipo="subselector" style="cursor:pointer;min-width:110px">
                                 <i class="bi bi-person-badge-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Docente</span>
+                            </div>
+
+                            <div class="rol-card flex-fill p-3 rounded border text-center text-muted"
+                                 data-rol="Empleado" data-tipo="subselector" style="cursor:pointer;min-width:110px">
+                                <i class="bi bi-briefcase-fill fs-3 d-block mb-1"></i>
+                                <span class="small fw-semibold">Empleado</span>
                             </div>
 
                         </div>
@@ -50,19 +56,19 @@
                         @enderror
                     </div>
 
-                    {{-- Sub-selector tipo docente --}}
+                    {{-- Sub-selector: Docente --}}
                     <div class="mb-3 d-none" id="tipo-docente-section">
                         <label class="form-label fw-semibold">
                             Tipo de vinculación <span class="text-danger">*</span>
                         </label>
                         <div class="d-flex gap-2 mb-2">
-                            <div class="tipo-doc-card flex-fill p-2 rounded border text-center"
-                                 data-tipo="Planta" style="cursor:pointer">
+                            <div class="subselector-card flex-fill p-2 rounded border text-center"
+                                 data-subtipo="Planta" style="cursor:pointer">
                                 <i class="bi bi-building me-1"></i>
                                 <span class="small fw-semibold">Planta</span>
                             </div>
-                            <div class="tipo-doc-card flex-fill p-2 rounded border text-center"
-                                 data-tipo="Cátedra" style="cursor:pointer">
+                            <div class="subselector-card flex-fill p-2 rounded border text-center"
+                                 data-subtipo="Cátedra" style="cursor:pointer">
                                 <i class="bi bi-clock-history me-1"></i>
                                 <span class="small fw-semibold">Cátedra</span>
                             </div>
@@ -73,8 +79,35 @@
                         </div>
                     </div>
 
+                    {{-- Sub-selector: Empleado --}}
+                    <div class="mb-3 d-none" id="tipo-empleado-section">
+                        <label class="form-label fw-semibold">
+                            Tipo de empleado <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex gap-2">
+                            <div class="subselector-card flex-fill p-2 rounded border text-center text-muted"
+                                 data-subtipo="Administrativo" data-implementado="0" style="cursor:pointer">
+                                <i class="bi bi-person-gear me-1"></i>
+                                <span class="small fw-semibold">Administrativo</span>
+                            </div>
+                            <div class="subselector-card flex-fill p-2 rounded border text-center"
+                                 data-subtipo="Contratista" data-implementado="1" style="cursor:pointer">
+                                <i class="bi bi-file-earmark-person me-1"></i>
+                                <span class="small fw-semibold">Contratista</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Próximamente (Administrativo) --}}
+                    <div class="d-none mb-3" id="proximamente-admin">
+                        <div class="alert alert-warning py-2 small mb-0">
+                            <i class="bi bi-hourglass-split me-1"></i>
+                            La carga de administrativos estará disponible próximamente.
+                        </div>
+                    </div>
+
                     {{-- Período --}}
-                    <div class="mb-3" id="campos-carga" style="display:none">
+                    <div class="mb-3 d-none" id="campos-carga">
                         <label for="id_periodo" class="form-label fw-semibold">
                             Período <span class="text-danger">*</span>
                         </label>
@@ -115,8 +148,8 @@
                         </div>
                     </div>
 
-                    {{-- Formato esperado --}}
-                    <div class="alert alert-light border mb-3 d-none" id="formato-info">
+                    {{-- Formato: Estudiante / Graduado --}}
+                    <div class="alert alert-light border mb-3 d-none" id="formato-estudiante">
                         <p class="small fw-semibold mb-1">
                             <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
                         </p>
@@ -127,6 +160,21 @@
                             <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
                             El código de <strong>SEDE</strong> debe existir en el
                             <a href="{{ route('sedes.index') }}">módulo de Sedes</a>.
+                        </p>
+                    </div>
+
+                    {{-- Formato: Contratista --}}
+                    <div class="alert alert-light border mb-3 d-none" id="formato-contratista">
+                        <p class="small fw-semibold mb-1">
+                            <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
+                        </p>
+                        <code class="small d-block text-wrap" style="font-size:.72rem">
+                            DOCUMENTO ; NOMBRES ; APELLIDOS ; CORREO ; NOMBRE SEDE ; DEPENDENCIA
+                        </code>
+                        <p class="small text-muted mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+                            La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
+                            se crea automáticamente si no existe.
                         </p>
                     </div>
 
@@ -197,7 +245,7 @@
 
     <style>
         .rol-card.sibi-selected,
-        .tipo-doc-card.sibi-selected {
+        .subselector-card.sibi-selected {
             background-color: #196844 !important;
             border-color: #196844 !important;
             color: #fff !important;
@@ -205,64 +253,100 @@
     </style>
 
     <script>
-        const rolCards       = document.querySelectorAll('.rol-card');
-        const nombreRolInput = document.getElementById('nombre_rol');
-        const btnProcesar    = document.getElementById('btn-procesar');
-        const lblRol         = document.getElementById('lbl-rol');
-        const camposCarga    = document.getElementById('campos-carga');
-        const campoArchivo   = document.getElementById('campo-archivo');
-        const formatoInfo    = document.getElementById('formato-info');
-        const tipoDocenteSec = document.getElementById('tipo-docente-section');
-        const tipoDocCards   = document.querySelectorAll('.tipo-doc-card');
+        const rolCards          = document.querySelectorAll('.rol-card');
+        const nombreRolInput    = document.getElementById('nombre_rol');
+        const btnProcesar       = document.getElementById('btn-procesar');
+        const lblRol            = document.getElementById('lbl-rol');
+        const camposCarga       = document.getElementById('campos-carga');
+        const campoArchivo      = document.getElementById('campo-archivo');
+        const formatoEstudiante = document.getElementById('formato-estudiante');
+        const formatoContratista= document.getElementById('formato-contratista');
+        const tipoDocenteSec    = document.getElementById('tipo-docente-section');
+        const tipoEmpleadoSec   = document.getElementById('tipo-empleado-section');
+        const proximamenteAdmin = document.getElementById('proximamente-admin');
 
-        function seleccionarRol(rol, implementado) {
+        function ocultarTodo() {
+            tipoDocenteSec.classList.add('d-none');
+            tipoEmpleadoSec.classList.add('d-none');
+            proximamenteAdmin.classList.add('d-none');
+            camposCarga.classList.add('d-none');
+            campoArchivo.classList.add('d-none');
+            formatoEstudiante.classList.add('d-none');
+            formatoContratista.classList.add('d-none');
+            btnProcesar.classList.add('d-none');
+        }
+
+        function seleccionarRol(rol) {
             rolCards.forEach(c => {
                 c.classList.remove('sibi-selected');
-                if (c.dataset.implementado === '0') {
-                    c.classList.add('text-muted');
-                }
+                c.classList.add('text-muted');
             });
-
             const card = document.querySelector(`.rol-card[data-rol="${rol}"]`);
-            card.classList.add('sibi-selected');
-            card.classList.remove('text-muted');
+            if (card) {
+                card.classList.add('sibi-selected');
+                card.classList.remove('text-muted');
+            }
 
-            nombreRolInput.value = rol;
-            lblRol.textContent   = rol;
+            ocultarTodo();
+            nombreRolInput.value = '';
+            lblRol.textContent = rol;
 
             if (rol === 'Docente') {
                 tipoDocenteSec.classList.remove('d-none');
-                camposCarga.style.display  = 'none';
-                campoArchivo.classList.add('d-none');
-                formatoInfo.classList.add('d-none');
-                btnProcesar.classList.add('d-none');
+            } else if (rol === 'Empleado') {
+                tipoEmpleadoSec.classList.remove('d-none');
             } else {
-                tipoDocenteSec.classList.add('d-none');
-                camposCarga.style.display  = '';
+                // Estudiante / Graduado
+                nombreRolInput.value = rol;
+                camposCarga.classList.remove('d-none');
                 campoArchivo.classList.remove('d-none');
-                formatoInfo.classList.remove('d-none');
+                formatoEstudiante.classList.remove('d-none');
                 btnProcesar.classList.remove('d-none');
             }
         }
 
+        function seleccionarSubtipo(subtipo) {
+            document.querySelectorAll('.subselector-card').forEach(c => c.classList.remove('sibi-selected'));
+            const card = document.querySelector(`.subselector-card[data-subtipo="${subtipo}"]`);
+            if (card) card.classList.add('sibi-selected');
+
+            proximamenteAdmin.classList.add('d-none');
+            camposCarga.classList.add('d-none');
+            campoArchivo.classList.add('d-none');
+            formatoEstudiante.classList.add('d-none');
+            formatoContratista.classList.add('d-none');
+            btnProcesar.classList.add('d-none');
+            nombreRolInput.value = '';
+
+            if (subtipo === 'Contratista') {
+                nombreRolInput.value = 'Contratista';
+                lblRol.textContent   = 'Contratistas';
+                camposCarga.classList.remove('d-none');
+                campoArchivo.classList.remove('d-none');
+                formatoContratista.classList.remove('d-none');
+                btnProcesar.classList.remove('d-none');
+            } else if (subtipo === 'Administrativo') {
+                proximamenteAdmin.classList.remove('d-none');
+            }
+        }
+
         rolCards.forEach(card => {
-            card.addEventListener('click', () => {
-                seleccionarRol(card.dataset.rol, card.dataset.implementado);
-            });
+            card.addEventListener('click', () => seleccionarRol(card.dataset.rol));
         });
 
-        tipoDocCards.forEach(card => {
-            card.addEventListener('click', () => {
-                tipoDocCards.forEach(c => c.classList.remove('sibi-selected'));
-                card.classList.add('sibi-selected');
-            });
+        document.querySelectorAll('.subselector-card').forEach(card => {
+            card.addEventListener('click', () => seleccionarSubtipo(card.dataset.subtipo));
         });
 
-        // Restaurar selección si hubo error de validación
-        @if(old('nombre_rol'))
-            seleccionarRol('{{ old('nombre_rol') }}', 1);
-        @elseif(session('nombre_rol'))
-            seleccionarRol('{{ session('nombre_rol') }}', 1);
+        // Restaurar selección si hubo error de validación o resultado previo
+        @if(old('nombre_rol') || session('nombre_rol'))
+            @php $rolRestaurar = old('nombre_rol') ?: session('nombre_rol'); @endphp
+            @if($rolRestaurar === 'Contratista')
+                seleccionarRol('Empleado');
+                seleccionarSubtipo('Contratista');
+            @else
+                seleccionarRol('{{ $rolRestaurar }}');
+            @endif
         @endif
     </script>
 
