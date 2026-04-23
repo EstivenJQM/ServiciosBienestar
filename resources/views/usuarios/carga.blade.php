@@ -34,12 +34,6 @@
                             </div>
 
                             <div class="rol-card p-3 rounded border text-center"
-                                 data-rol="Docente" data-tipo="subselector" style="cursor:pointer;flex:1 1 0;min-width:110px">
-                                <i class="bi bi-person-badge-fill fs-3 d-block mb-1"></i>
-                                <span class="small fw-semibold">Docente</span>
-                            </div>
-
-                            <div class="rol-card p-3 rounded border text-center"
                                  data-rol="Empleado" data-tipo="subselector" style="cursor:pointer;flex:1 1 0;min-width:110px">
                                 <i class="bi bi-briefcase-fill fs-3 d-block mb-1"></i>
                                 <span class="small fw-semibold">Empleado</span>
@@ -60,29 +54,6 @@
                                 <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
                             </div>
                         @enderror
-                    </div>
-
-                    {{-- Sub-selector: Docente --}}
-                    <div class="mb-3 d-none" id="tipo-docente-section">
-                        <label class="form-label fw-semibold">
-                            Tipo de vinculación <span class="text-danger">*</span>
-                        </label>
-                        <div class="d-flex gap-2 mb-2">
-                            <div class="subselector-card flex-fill p-2 rounded border text-center"
-                                 data-subtipo="Planta" style="cursor:pointer">
-                                <i class="bi bi-building me-1"></i>
-                                <span class="small fw-semibold">Planta</span>
-                            </div>
-                            <div class="subselector-card flex-fill p-2 rounded border text-center"
-                                 data-subtipo="Cátedra" style="cursor:pointer">
-                                <i class="bi bi-clock-history me-1"></i>
-                                <span class="small fw-semibold">Cátedra</span>
-                            </div>
-                        </div>
-                        <div class="alert alert-warning py-2 small mb-0">
-                            <i class="bi bi-hourglass-split me-1"></i>
-                            La carga de docentes estará disponible próximamente.
-                        </div>
                     </div>
 
                     {{-- Sub-selector: Empleado --}}
@@ -313,11 +284,9 @@
         const formatoFamiliar       = document.getElementById('formato-familiar');
         const formatoAdministrativo = document.getElementById('formato-administrativo');
         const formatoDocente        = document.getElementById('formato-docente');
-        const tipoDocenteSec        = document.getElementById('tipo-docente-section');
         const tipoEmpleadoSec       = document.getElementById('tipo-empleado-section');
 
         function ocultarTodo() {
-            tipoDocenteSec.classList.add('d-none');
             tipoEmpleadoSec.classList.add('d-none');
             camposCarga.classList.add('d-none');
             campoArchivo.classList.add('d-none');
@@ -346,9 +315,7 @@
             nombreRolInput.value = '';
             lblRol.textContent = rol;
 
-            if (rol === 'Docente') {
-                tipoDocenteSec.classList.remove('d-none');
-            } else if (rol === 'Empleado') {
+            if (rol === 'Empleado') {
                 tipoEmpleadoSec.classList.remove('d-none');
             } else {
                 nombreRolInput.value = rol;
