@@ -163,12 +163,31 @@
                             <th>Documento</th>
                             <th>Nombre</th>
                             <th>Rol</th>
-                            <th>Estado</th>
                             <th style="width:50px"></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($servicio->usuariosAsignados->sortBy(fn($u) => $u->usuario?->primer_apellido) as $urs)
+                            @php
+                                $tipoEmp  = $urs->empleado?->tipoEmpleado?->nombre;
+                                $cargoNom = $urs->empleado?->cargo?->nombre;
+                                $esEmpleado = $urs->rol?->nombre === 'Empleado';
+
+                                $rolColor = match(true) {
+                                    $urs->rol?->nombre === 'Estudiante'              => '#196844',
+                                    $urs->rol?->nombre === 'Graduado'                => '#0d6efd',
+                                    $esEmpleado && $tipoEmp === 'Contratista'        => '#6f42c1',
+                                    $esEmpleado && $tipoEmp === 'Administrativo'     => '#0d6efd',
+                                    $esEmpleado && $tipoEmp === 'Docente'            => '#856404',
+                                    $esEmpleado                                      => '#856404',
+                                    default                                          => '#6c757d',
+                                };
+                                $etiqueta = match(true) {
+                                    $esEmpleado && $tipoEmp === 'Docente' => ($cargoNom ?? 'Docente'),
+                                    $esEmpleado                           => ($tipoEmp ?? 'Empleado'),
+                                    default                               => ($urs->rol?->nombre ?? '—'),
+                                };
+                            @endphp
                             <tr>
                                 <td class="small fw-semibold">
                                     {{ $urs->usuario?->documento ?? '—' }}
@@ -177,22 +196,8 @@
                                     {{ $urs->usuario?->nombre_completo ?? '—' }}
                                 </td>
                                 <td>
-                                    @php
-                                        $rolColor = match($urs->rol?->nombre) {
-                                            'Estudiante' => '#196844',
-                                            'Graduado'   => '#0d6efd',
-                                            'Empleado'   => '#856404',
-                                            default      => '#6c757d',
-                                        };
-                                    @endphp
                                     <span class="badge" style="background-color:{{ $rolColor }};font-size:.68rem">
-                                        {{ $urs->rol?->nombre ?? '—' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge {{ $urs->estado === 'activo' ? 'bg-success' : 'bg-danger' }}"
-                                          style="font-size:.68rem">
-                                        {{ ucfirst($urs->estado) }}
+                                        {{ $etiqueta }}
                                     </span>
                                 </td>
                                 <td class="text-center">

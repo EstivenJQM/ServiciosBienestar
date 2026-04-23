@@ -49,6 +49,6 @@ class Servicio extends Model
             'servicio_usuario',
             'id_servicio',
             'id_usuario_rol_sede'
-        )->with(['usuario', 'rol', 'sede']);
+        )->with(['usuario', 'rol', 'sede', 'empleado.tipoEmpleado', 'empleado.cargo']);
     }
 }

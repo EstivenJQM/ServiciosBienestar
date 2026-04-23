@@ -47,7 +47,10 @@
         #sidebar {
             width: 230px;
             min-width: 230px;
-            min-height: calc(100vh - 56px);
+            height: calc(100vh - 56px);
+            position: sticky;
+            top: 56px;
+            overflow-y: auto;
             background: #fff;
             border-right: 1px solid #e5e7eb;
         }
