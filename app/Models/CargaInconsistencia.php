@@ -20,6 +20,8 @@ class CargaInconsistencia extends Model
         'codigo_sede',
         'nombre_sede',
         'dependencia',
+        'codigo_cargo',
+        'nombre_cargo',
         'codigo_plan',
         'nombre_programa',
         'nombre_facultad',
@@ -41,8 +43,9 @@ class CargaInconsistencia extends Model
         $e = mb_strtolower($this->error);
 
         return match(true) {
+            str_contains($e, 'cargo')       => 'nombre_cargo',
             str_contains($e, 'dependencia') => 'dependencia',
-            str_contains($e, 'sede')        => $this->nombre_rol === 'Contratista' ? 'nombre_sede' : 'codigo_sede',
+            str_contains($e, 'sede')        => in_array($this->nombre_rol, ['Contratista', 'Administrativo']) ? 'nombre_sede' : 'codigo_sede',
             str_contains($e, 'facultad')    => 'nombre_facultad',
             str_contains($e, 'programa')    => 'nombre_programa',
             str_contains($e, 'plan')        => 'codigo_plan',

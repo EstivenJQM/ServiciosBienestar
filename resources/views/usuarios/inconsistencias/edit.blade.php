@@ -121,7 +121,7 @@
                         </div>
                     </div>
 
-                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Familiar']))
+                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Familiar', 'Administrativo']))
 
                     {{-- ── Sede (contratista: por nombre) ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
@@ -156,8 +156,8 @@
                         </div>
                     </div>
 
-                    @if($inconsistencia->nombre_rol === 'Contratista')
-                    {{-- ── Dependencia (solo contratistas) ── --}}
+                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Administrativo']))
+                    {{-- ── Dependencia (contratistas y administrativos) ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
                         <i class="bi bi-diagram-3 me-1"></i>Dependencia
                         @if($campo === 'dependencia')
@@ -182,6 +182,50 @@
                     </div>
                     @else
                     <input type="hidden" name="dependencia" value="">
+                    @endif
+
+                    @if($inconsistencia->nombre_rol === 'Administrativo')
+                    {{-- ── Cargo (solo administrativos) ── --}}
+                    <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
+                        <i class="bi bi-person-badge me-1"></i>Cargo
+                        @if($campo === 'nombre_cargo')
+                            <span class="badge bg-danger ms-1" style="font-size:.65rem">
+                                <i class="bi bi-exclamation-circle me-1"></i>Campo con error
+                            </span>
+                        @endif
+                    </p>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-4">
+                            <label class="form-label small fw-semibold">
+                                Código del cargo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="codigo_cargo"
+                                   value="{{ old('codigo_cargo', $inconsistencia->codigo_cargo) }}"
+                                   maxlength="30"
+                                   class="form-control form-control-sm {{ $errors->has('codigo_cargo') ? 'is-invalid' : '' }}">
+                            @error('codigo_cargo')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-sm-8">
+                            <label class="form-label small fw-semibold">
+                                Nombre del cargo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="nombre_cargo"
+                                   value="{{ old('nombre_cargo', $inconsistencia->nombre_cargo) }}"
+                                   maxlength="150"
+                                   class="form-control form-control-sm
+                                          {{ $campo === 'nombre_cargo' ? 'border-danger' : '' }}
+                                          {{ $errors->has('nombre_cargo') ? 'is-invalid' : '' }}">
+                            @error('nombre_cargo')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    @else
+                    <input type="hidden" name="codigo_cargo" value="">
+                    <input type="hidden" name="nombre_cargo" value="">
                     @endif
 
                     {{-- Campos ocultos no usados --}}

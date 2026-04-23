@@ -91,8 +91,8 @@
                             Tipo de empleado <span class="text-danger">*</span>
                         </label>
                         <div class="d-flex gap-2">
-                            <div class="subselector-card flex-fill p-2 rounded border text-center text-muted"
-                                 data-subtipo="Administrativo" data-implementado="0" style="cursor:pointer">
+                            <div class="subselector-card flex-fill p-2 rounded border text-center"
+                                 data-subtipo="Administrativo" data-implementado="1" style="cursor:pointer">
                                 <i class="bi bi-person-gear me-1"></i>
                                 <span class="small fw-semibold">Administrativo</span>
                             </div>
@@ -101,14 +101,6 @@
                                 <i class="bi bi-file-earmark-person me-1"></i>
                                 <span class="small fw-semibold">Contratista</span>
                             </div>
-                        </div>
-                    </div>
-
-                    {{-- Próximamente (Administrativo) --}}
-                    <div class="d-none mb-3" id="proximamente-admin">
-                        <div class="alert alert-warning py-2 small mb-0">
-                            <i class="bi bi-hourglass-split me-1"></i>
-                            La carga de administrativos estará disponible próximamente.
                         </div>
                     </div>
 
@@ -180,6 +172,22 @@
                         <p class="small text-muted mt-2 mb-0">
                             <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
                             La <strong>SEDE</strong> se busca por nombre.
+                        </p>
+                    </div>
+
+                    {{-- Formato: Administrativo --}}
+                    <div class="alert alert-light border mb-3 d-none" id="formato-administrativo">
+                        <p class="small fw-semibold mb-1">
+                            <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
+                        </p>
+                        <code class="small d-block text-wrap" style="font-size:.72rem">
+                            DOCUMENTO ; NOMBRES ; APELLIDOS ; CORREO ; NOMBRE SEDE ; DEPENDENCIA ; CODIGO CARGO ; NOMBRE CARGO
+                        </code>
+                        <p class="small text-muted mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+                            La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
+                            se crea automáticamente si no existe. El <strong>CARGO</strong> se crea
+                            automáticamente si no existe; el código es del cargo, no del empleado.
                         </p>
                     </div>
 
@@ -277,32 +285,33 @@
         const nombreRolInput    = document.getElementById('nombre_rol');
         const btnProcesar       = document.getElementById('btn-procesar');
         const lblRol            = document.getElementById('lbl-rol');
-        const camposCarga        = document.getElementById('campos-carga');
-        const campoArchivo       = document.getElementById('campo-archivo');
-        const formatoEstudiante  = document.getElementById('formato-estudiante');
-        const formatoContratista = document.getElementById('formato-contratista');
-        const formatoFamiliar    = document.getElementById('formato-familiar');
-        const tipoDocenteSec     = document.getElementById('tipo-docente-section');
-        const tipoEmpleadoSec    = document.getElementById('tipo-empleado-section');
-        const proximamenteAdmin  = document.getElementById('proximamente-admin');
+        const camposCarga           = document.getElementById('campos-carga');
+        const campoArchivo          = document.getElementById('campo-archivo');
+        const formatoEstudiante     = document.getElementById('formato-estudiante');
+        const formatoContratista    = document.getElementById('formato-contratista');
+        const formatoFamiliar       = document.getElementById('formato-familiar');
+        const formatoAdministrativo = document.getElementById('formato-administrativo');
+        const tipoDocenteSec        = document.getElementById('tipo-docente-section');
+        const tipoEmpleadoSec       = document.getElementById('tipo-empleado-section');
 
         function ocultarTodo() {
             tipoDocenteSec.classList.add('d-none');
             tipoEmpleadoSec.classList.add('d-none');
-            proximamenteAdmin.classList.add('d-none');
             camposCarga.classList.add('d-none');
             campoArchivo.classList.add('d-none');
             formatoEstudiante.classList.add('d-none');
             formatoContratista.classList.add('d-none');
             formatoFamiliar.classList.add('d-none');
+            formatoAdministrativo.classList.add('d-none');
             btnProcesar.classList.add('d-none');
         }
 
         const formatoPorRol = {
-            'Estudiante':  formatoEstudiante,
-            'Graduado':    formatoEstudiante,
-            'Familiar':    formatoFamiliar,
-            'Contratista': formatoContratista,
+            'Estudiante':     formatoEstudiante,
+            'Graduado':       formatoEstudiante,
+            'Familiar':       formatoFamiliar,
+            'Contratista':    formatoContratista,
+            'Administrativo': formatoAdministrativo,
         };
 
         function seleccionarRol(rol) {
@@ -331,11 +340,11 @@
             const card = document.querySelector(`.subselector-card[data-subtipo="${subtipo}"]`);
             if (card) card.classList.add('sibi-selected');
 
-            proximamenteAdmin.classList.add('d-none');
             camposCarga.classList.add('d-none');
             campoArchivo.classList.add('d-none');
             formatoEstudiante.classList.add('d-none');
             formatoContratista.classList.add('d-none');
+            formatoAdministrativo.classList.add('d-none');
             btnProcesar.classList.add('d-none');
             nombreRolInput.value = '';
 
@@ -347,7 +356,12 @@
                 formatoContratista.classList.remove('d-none');
                 btnProcesar.classList.remove('d-none');
             } else if (subtipo === 'Administrativo') {
-                proximamenteAdmin.classList.remove('d-none');
+                nombreRolInput.value = 'Administrativo';
+                lblRol.textContent   = 'Administrativos';
+                camposCarga.classList.remove('d-none');
+                campoArchivo.classList.remove('d-none');
+                formatoAdministrativo.classList.remove('d-none');
+                btnProcesar.classList.remove('d-none');
             }
         }
 
@@ -365,6 +379,9 @@
             @if($rolRestaurar === 'Contratista')
                 seleccionarRol('Empleado');
                 seleccionarSubtipo('Contratista');
+            @elseif($rolRestaurar === 'Administrativo')
+                seleccionarRol('Empleado');
+                seleccionarSubtipo('Administrativo');
             @else
                 seleccionarRol('{{ $rolRestaurar }}');
             @endif

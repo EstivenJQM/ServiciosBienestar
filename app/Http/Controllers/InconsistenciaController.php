@@ -8,6 +8,7 @@ use App\Models\Sede;
 use App\Services\CargaEstudiantesService;
 use App\Services\CargaContratistasService;
 use App\Services\CargaFamiliaresService;
+use App\Services\CargaAdministrativosService;
 use Illuminate\Http\Request;
 
 class InconsistenciaController extends Controller
@@ -42,15 +43,39 @@ class InconsistenciaController extends Controller
 
     public function update(
         Request $request,
-        CargaInconsistencia      $inconsistencia,
-        CargaEstudiantesService  $estudiantesService,
-        CargaContratistasService $contratistasService,
-        CargaFamiliaresService   $familiaresService
+        CargaInconsistencia         $inconsistencia,
+        CargaEstudiantesService     $estudiantesService,
+        CargaContratistasService    $contratistasService,
+        CargaFamiliaresService      $familiaresService,
+        CargaAdministrativosService $administrativosService
     ) {
-        $esContratista = ($inconsistencia->nombre_rol === 'Contratista');
-        $esFamiliar    = ($inconsistencia->nombre_rol === 'Familiar');
+        $esAdministrativo = ($inconsistencia->nombre_rol === 'Administrativo');
+        $esContratista    = ($inconsistencia->nombre_rol === 'Contratista');
+        $esFamiliar       = ($inconsistencia->nombre_rol === 'Familiar');
 
-        if ($esContratista) {
+        if ($esAdministrativo) {
+            $request->validate([
+                'id_periodo'   => 'required|exists:periodo,id_periodo',
+                'documento'    => 'required|string|max:20',
+                'nombres'      => 'required|string|max:100',
+                'apellidos'    => 'required|string|max:100',
+                'email'        => 'required|string|max:100',
+                'nombre_sede'  => 'required|string|max:100',
+                'dependencia'  => 'required|string|max:200',
+                'codigo_cargo' => 'required|string|max:30',
+                'nombre_cargo' => 'required|string|max:150',
+            ], [
+                'id_periodo.required'   => 'Seleccione un período.',
+                'documento.required'    => 'El documento es obligatorio.',
+                'nombres.required'      => 'Los nombres son obligatorios.',
+                'apellidos.required'    => 'Los apellidos son obligatorios.',
+                'email.required'        => 'El correo es obligatorio.',
+                'nombre_sede.required'  => 'La sede es obligatoria.',
+                'dependencia.required'  => 'La dependencia es obligatoria.',
+                'codigo_cargo.required' => 'El código del cargo es obligatorio.',
+                'nombre_cargo.required' => 'El nombre del cargo es obligatorio.',
+            ]);
+        } elseif ($esContratista) {
             $request->validate([
                 'id_periodo'  => 'required|exists:periodo,id_periodo',
                 'documento'   => 'required|string|max:20',
@@ -111,7 +136,12 @@ class InconsistenciaController extends Controller
             ]);
         }
 
-        if ($esContratista) {
+        if ($esAdministrativo) {
+            $inconsistencia->fill($request->only([
+                'id_periodo', 'documento', 'nombres', 'apellidos',
+                'email', 'nombre_sede', 'dependencia', 'codigo_cargo', 'nombre_cargo',
+            ]));
+        } elseif ($esContratista) {
             $inconsistencia->fill($request->only([
                 'id_periodo', 'documento', 'nombres', 'apellidos',
                 'email', 'nombre_sede', 'dependencia',
@@ -129,7 +159,19 @@ class InconsistenciaController extends Controller
             ]));
         }
 
-        if ($esContratista) {
+        if ($esAdministrativo) {
+            [$ok, $error] = $administrativosService->procesarFilaIndividual(
+                (int) $request->id_periodo,
+                trim($request->documento),
+                trim($request->nombres),
+                trim($request->apellidos),
+                trim($request->email ?? ''),
+                trim($request->nombre_sede),
+                trim($request->dependencia),
+                trim($request->codigo_cargo),
+                trim($request->nombre_cargo),
+            );
+        } elseif ($esContratista) {
             [$ok, $error] = $contratistasService->procesarFilaIndividual(
                 (int) $request->id_periodo,
                 trim($request->documento),

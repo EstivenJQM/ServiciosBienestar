@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\CargaEstudiantesService;
 use App\Services\CargaContratistasService;
 use App\Services\CargaFamiliaresService;
+use App\Services\CargaAdministrativosService;
 use App\Models\Periodo;
 use Illuminate\Http\Request;
 
@@ -19,12 +20,13 @@ class CargaUsuariosController extends Controller
 
     public function store(
         Request $request,
-        CargaEstudiantesService  $estudiantesService,
-        CargaContratistasService $contratistasService,
-        CargaFamiliaresService   $familiaresService
+        CargaEstudiantesService      $estudiantesService,
+        CargaContratistasService     $contratistasService,
+        CargaFamiliaresService       $familiaresService,
+        CargaAdministrativosService  $administrativosService
     ) {
         $request->validate([
-            'nombre_rol' => 'required|in:Estudiante,Graduado,Contratista,Familiar',
+            'nombre_rol' => 'required|in:Estudiante,Graduado,Contratista,Familiar,Administrativo',
             'id_periodo' => 'required|exists:periodo,id_periodo',
             'archivo'    => 'required|file|mimes:csv,txt|max:20480',
         ], [
@@ -39,7 +41,12 @@ class CargaUsuariosController extends Controller
 
         $rol = $request->nombre_rol;
 
-        if ($rol === 'Contratista') {
+        if ($rol === 'Administrativo') {
+            $resultado = $administrativosService->cargar(
+                $request->file('archivo'),
+                (int) $request->id_periodo
+            );
+        } elseif ($rol === 'Contratista') {
             $resultado = $contratistasService->cargar(
                 $request->file('archivo'),
                 (int) $request->id_periodo
