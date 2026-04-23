@@ -6,6 +6,7 @@ use App\Services\CargaEstudiantesService;
 use App\Services\CargaContratistasService;
 use App\Services\CargaFamiliaresService;
 use App\Services\CargaAdministrativosService;
+use App\Services\CargaDocentesService;
 use App\Models\Periodo;
 use Illuminate\Http\Request;
 
@@ -23,10 +24,11 @@ class CargaUsuariosController extends Controller
         CargaEstudiantesService      $estudiantesService,
         CargaContratistasService     $contratistasService,
         CargaFamiliaresService       $familiaresService,
-        CargaAdministrativosService  $administrativosService
+        CargaAdministrativosService  $administrativosService,
+        CargaDocentesService         $docentesService
     ) {
         $request->validate([
-            'nombre_rol' => 'required|in:Estudiante,Graduado,Contratista,Familiar,Administrativo',
+            'nombre_rol' => 'required|in:Estudiante,Graduado,Contratista,Familiar,Administrativo,Docente',
             'id_periodo' => 'required|exists:periodo,id_periodo',
             'archivo'    => 'required|file|mimes:csv,txt|max:20480',
         ], [
@@ -41,7 +43,12 @@ class CargaUsuariosController extends Controller
 
         $rol = $request->nombre_rol;
 
-        if ($rol === 'Administrativo') {
+        if ($rol === 'Docente') {
+            $resultado = $docentesService->cargar(
+                $request->file('archivo'),
+                (int) $request->id_periodo
+            );
+        } elseif ($rol === 'Administrativo') {
             $resultado = $administrativosService->cargar(
                 $request->file('archivo'),
                 (int) $request->id_periodo

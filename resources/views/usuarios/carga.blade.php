@@ -92,14 +92,19 @@
                         </label>
                         <div class="d-flex gap-2">
                             <div class="subselector-card flex-fill p-2 rounded border text-center"
-                                 data-subtipo="Administrativo" data-implementado="1" style="cursor:pointer">
+                                 data-subtipo="Administrativo" style="cursor:pointer">
                                 <i class="bi bi-person-gear me-1"></i>
                                 <span class="small fw-semibold">Administrativo</span>
                             </div>
                             <div class="subselector-card flex-fill p-2 rounded border text-center"
-                                 data-subtipo="Contratista" data-implementado="1" style="cursor:pointer">
+                                 data-subtipo="Contratista" style="cursor:pointer">
                                 <i class="bi bi-file-earmark-person me-1"></i>
                                 <span class="small fw-semibold">Contratista</span>
+                            </div>
+                            <div class="subselector-card flex-fill p-2 rounded border text-center"
+                                 data-subtipo="Docente" style="cursor:pointer">
+                                <i class="bi bi-person-badge-fill me-1"></i>
+                                <span class="small fw-semibold">Docente</span>
                             </div>
                         </div>
                     </div>
@@ -188,6 +193,22 @@
                             La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
                             se crea automáticamente si no existe. El <strong>CARGO</strong> se crea
                             automáticamente si no existe; el código es del cargo, no del empleado.
+                        </p>
+                    </div>
+
+                    {{-- Formato: Docente --}}
+                    <div class="alert alert-light border mb-3 d-none" id="formato-docente">
+                        <p class="small fw-semibold mb-1">
+                            <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
+                        </p>
+                        <code class="small d-block text-wrap" style="font-size:.72rem">
+                            DOCUMENTO ; NOMBRES ; APELLIDOS ; CORREO ; NOMBRE SEDE ; DEPENDENCIA ; CODIGO CARGO ; NOMBRE CARGO
+                        </code>
+                        <p class="small text-muted mt-2 mb-0">
+                            <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+                            La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
+                            (facultad) se crea automáticamente si no existe. El <strong>CARGO</strong>
+                            (ej. DOCENTE PLANTA, DOCENTE CATEDRA) se crea automáticamente si no existe.
                         </p>
                     </div>
 
@@ -291,6 +312,7 @@
         const formatoContratista    = document.getElementById('formato-contratista');
         const formatoFamiliar       = document.getElementById('formato-familiar');
         const formatoAdministrativo = document.getElementById('formato-administrativo');
+        const formatoDocente        = document.getElementById('formato-docente');
         const tipoDocenteSec        = document.getElementById('tipo-docente-section');
         const tipoEmpleadoSec       = document.getElementById('tipo-empleado-section');
 
@@ -303,6 +325,7 @@
             formatoContratista.classList.add('d-none');
             formatoFamiliar.classList.add('d-none');
             formatoAdministrativo.classList.add('d-none');
+            formatoDocente.classList.add('d-none');
             btnProcesar.classList.add('d-none');
         }
 
@@ -312,6 +335,7 @@
             'Familiar':       formatoFamiliar,
             'Contratista':    formatoContratista,
             'Administrativo': formatoAdministrativo,
+            'Docente':        formatoDocente,
         };
 
         function seleccionarRol(rol) {
@@ -348,19 +372,18 @@
             btnProcesar.classList.add('d-none');
             nombreRolInput.value = '';
 
-            if (subtipo === 'Contratista') {
-                nombreRolInput.value = 'Contratista';
-                lblRol.textContent   = 'Contratistas';
+            const config = {
+                'Contratista':    { label: 'Contratistas',    formato: formatoContratista },
+                'Administrativo': { label: 'Administrativos', formato: formatoAdministrativo },
+                'Docente':        { label: 'Docentes',        formato: formatoDocente },
+            };
+
+            if (config[subtipo]) {
+                nombreRolInput.value = subtipo;
+                lblRol.textContent   = config[subtipo].label;
                 camposCarga.classList.remove('d-none');
                 campoArchivo.classList.remove('d-none');
-                formatoContratista.classList.remove('d-none');
-                btnProcesar.classList.remove('d-none');
-            } else if (subtipo === 'Administrativo') {
-                nombreRolInput.value = 'Administrativo';
-                lblRol.textContent   = 'Administrativos';
-                camposCarga.classList.remove('d-none');
-                campoArchivo.classList.remove('d-none');
-                formatoAdministrativo.classList.remove('d-none');
+                config[subtipo].formato.classList.remove('d-none');
                 btnProcesar.classList.remove('d-none');
             }
         }
@@ -382,6 +405,9 @@
             @elseif($rolRestaurar === 'Administrativo')
                 seleccionarRol('Empleado');
                 seleccionarSubtipo('Administrativo');
+            @elseif($rolRestaurar === 'Docente')
+                seleccionarRol('Empleado');
+                seleccionarSubtipo('Docente');
             @else
                 seleccionarRol('{{ $rolRestaurar }}');
             @endif

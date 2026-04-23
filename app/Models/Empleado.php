@@ -11,15 +11,20 @@ class Empleado extends Model
     public    $incrementing = false;
     public    $timestamps   = false;
 
-    protected $fillable = ['id_usuario_rol_sede', 'id_tipo_empleado'];
+    protected $fillable = ['id_usuario_rol_sede', 'id_tipo_empleado', 'id_dependencia', 'id_cargo'];
 
     public function tipoEmpleado()
     {
         return $this->belongsTo(TipoEmpleado::class, 'id_tipo_empleado', 'id_tipo_empleado');
     }
 
-    public function contratista()
+    public function dependencia()
     {
-        return $this->hasOne(EmpleadoContratista::class, 'id_usuario_rol_sede', 'id_usuario_rol_sede');
+        return $this->belongsTo(Dependencia::class, 'id_dependencia', 'id_dependencia');
+    }
+
+    public function cargo()
+    {
+        return $this->belongsTo(Cargo::class, 'id_cargo', 'id_cargo');
     }
 }

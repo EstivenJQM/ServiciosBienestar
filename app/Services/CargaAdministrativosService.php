@@ -72,14 +72,14 @@ class CargaAdministrativosService
             ] = array_map('trim', array_slice($cols, 0, 8));
 
             $vacios = [];
-            if (empty($documento))    $vacios[] = 'documento';
-            if (empty($nombres))      $vacios[] = 'nombres';
-            if (empty($apellidos))    $vacios[] = 'apellidos';
-            if (empty($correo))       $vacios[] = 'correo';
-            if (empty($nombreSede))   $vacios[] = 'nombre sede';
-            if (empty($dependencia))  $vacios[] = 'dependencia';
-            if (empty($codigoCargo))  $vacios[] = 'codigo del cargo';
-            if (empty($nombreCargo))  $vacios[] = 'nombre del cargo';
+            if (empty($documento))   $vacios[] = 'documento';
+            if (empty($nombres))     $vacios[] = 'nombres';
+            if (empty($apellidos))   $vacios[] = 'apellidos';
+            if (empty($correo))      $vacios[] = 'correo';
+            if (empty($nombreSede))  $vacios[] = 'nombre sede';
+            if (empty($dependencia)) $vacios[] = 'dependencia';
+            if (empty($codigoCargo)) $vacios[] = 'codigo del cargo';
+            if (empty($nombreCargo)) $vacios[] = 'nombre del cargo';
 
             if (! empty($vacios)) {
                 $msg = 'Fila ' . $fila . ': campo(s) obligatorio(s) vacío(s): ' . implode(', ', $vacios) . '.';
@@ -96,13 +96,12 @@ class CargaAdministrativosService
             try {
                 DB::beginTransaction();
 
-                $sede   = $this->resolverSede($nombreSede);
-                $idDep  = $this->resolverDependencia($dependencia);
+                $sede    = $this->resolverSede($nombreSede);
+                $idDep   = $this->resolverDependencia($dependencia);
                 $idCargo = $this->resolverCargo($codigoCargo, $nombreCargo);
                 [$usuario, $esNuevo] = $this->resolverUsuario($documento, $nombres, $apellidos, $correo);
-                $idUrs  = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
-                $this->resolverEmpleado($idUrs);
-                $this->resolverEmpleadoAdministrativo($idUrs, $idDep, $idCargo);
+                $idUrs   = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
+                $this->resolverEmpleado($idUrs, $idDep, $idCargo);
 
                 DB::commit();
                 $esNuevo ? $creados++ : $actualizados++;
@@ -265,35 +264,21 @@ class CargaAdministrativosService
         ]);
     }
 
-    private function resolverEmpleado(int $idUrs): void
+    private function resolverEmpleado(int $idUrs, ?int $idDependencia, ?int $idCargo): void
     {
         $existe = DB::table('empleado')->where('id_usuario_rol_sede', $idUrs)->exists();
 
-        if (! $existe) {
-            DB::table('empleado')->insert([
-                'id_usuario_rol_sede' => $idUrs,
-                'id_tipo_empleado'    => $this->idTipoEmpleado,
-            ]);
-        }
-    }
-
-    private function resolverEmpleadoAdministrativo(
-        int $idUrs,
-        int $idDependencia,
-        int $idCargo
-    ): void {
-        $existe = DB::table('empleado_administrativo')->where('id_usuario_rol_sede', $idUrs)->exists();
-
         if ($existe) {
-            DB::table('empleado_administrativo')
+            DB::table('empleado')
                 ->where('id_usuario_rol_sede', $idUrs)
                 ->update([
                     'id_dependencia' => $idDependencia,
                     'id_cargo'       => $idCargo,
                 ]);
         } else {
-            DB::table('empleado_administrativo')->insert([
+            DB::table('empleado')->insert([
                 'id_usuario_rol_sede' => $idUrs,
+                'id_tipo_empleado'    => $this->idTipoEmpleado,
                 'id_dependencia'      => $idDependencia,
                 'id_cargo'            => $idCargo,
             ]);
@@ -342,8 +327,7 @@ class CargaAdministrativosService
             $idCargo = $this->resolverCargo($codigoCargo, $nombreCargo);
             [$usuario,] = $this->resolverUsuario($documento, $nombres, $apellidos, $correo);
             $idUrs   = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
-            $this->resolverEmpleado($idUrs);
-            $this->resolverEmpleadoAdministrativo($idUrs, $idDep, $idCargo);
+            $this->resolverEmpleado($idUrs, $idDep, $idCargo);
 
             DB::commit();
             return [true, null];
@@ -368,24 +352,24 @@ class CargaAdministrativosService
     ): void {
         try {
             DB::table('carga_inconsistencia')->insert([
-                'id_periodo'   => $idPeriodo,
-                'nombre_rol'   => self::NOMBRE_ROL,
-                'fila'         => $fila,
-                'documento'    => $documento,
-                'nombres'      => $nombres,
-                'apellidos'    => $apellidos,
-                'email'        => $correo,
-                'codigo_sede'  => '',
-                'nombre_sede'  => $nombreSede,
-                'dependencia'  => $dependencia,
-                'codigo_cargo' => $codigoCargo,
-                'nombre_cargo' => $nombreCargo,
-                'codigo_plan'  => '',
+                'id_periodo'      => $idPeriodo,
+                'nombre_rol'      => self::NOMBRE_ROL,
+                'fila'            => $fila,
+                'documento'       => $documento,
+                'nombres'         => $nombres,
+                'apellidos'       => $apellidos,
+                'email'           => $correo,
+                'codigo_sede'     => '',
+                'nombre_sede'     => $nombreSede,
+                'dependencia'     => $dependencia,
+                'codigo_cargo'    => $codigoCargo,
+                'nombre_cargo'    => $nombreCargo,
+                'codigo_plan'     => '',
                 'nombre_programa' => '',
                 'nombre_facultad' => '',
-                'error'        => $error,
-                'created_at'   => now(),
-                'updated_at'   => now(),
+                'error'           => $error,
+                'created_at'      => now(),
+                'updated_at'      => now(),
             ]);
         } catch (\Throwable $ex) {
             Log::error('No se pudo guardar inconsistencia administrativo: ' . $ex->getMessage());

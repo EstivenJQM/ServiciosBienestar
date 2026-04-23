@@ -9,6 +9,7 @@ use App\Services\CargaEstudiantesService;
 use App\Services\CargaContratistasService;
 use App\Services\CargaFamiliaresService;
 use App\Services\CargaAdministrativosService;
+use App\Services\CargaDocentesService;
 use Illuminate\Http\Request;
 
 class InconsistenciaController extends Controller
@@ -47,13 +48,15 @@ class InconsistenciaController extends Controller
         CargaEstudiantesService     $estudiantesService,
         CargaContratistasService    $contratistasService,
         CargaFamiliaresService      $familiaresService,
-        CargaAdministrativosService $administrativosService
+        CargaAdministrativosService $administrativosService,
+        CargaDocentesService        $docentesService
     ) {
+        $esDocente        = ($inconsistencia->nombre_rol === 'Docente');
         $esAdministrativo = ($inconsistencia->nombre_rol === 'Administrativo');
         $esContratista    = ($inconsistencia->nombre_rol === 'Contratista');
         $esFamiliar       = ($inconsistencia->nombre_rol === 'Familiar');
 
-        if ($esAdministrativo) {
+        if ($esDocente || $esAdministrativo) {
             $request->validate([
                 'id_periodo'   => 'required|exists:periodo,id_periodo',
                 'documento'    => 'required|string|max:20',
@@ -136,7 +139,7 @@ class InconsistenciaController extends Controller
             ]);
         }
 
-        if ($esAdministrativo) {
+        if ($esDocente || $esAdministrativo) {
             $inconsistencia->fill($request->only([
                 'id_periodo', 'documento', 'nombres', 'apellidos',
                 'email', 'nombre_sede', 'dependencia', 'codigo_cargo', 'nombre_cargo',
@@ -159,7 +162,19 @@ class InconsistenciaController extends Controller
             ]));
         }
 
-        if ($esAdministrativo) {
+        if ($esDocente) {
+            [$ok, $error] = $docentesService->procesarFilaIndividual(
+                (int) $request->id_periodo,
+                trim($request->documento),
+                trim($request->nombres),
+                trim($request->apellidos),
+                trim($request->email ?? ''),
+                trim($request->nombre_sede),
+                trim($request->dependencia),
+                trim($request->codigo_cargo),
+                trim($request->nombre_cargo),
+            );
+        } elseif ($esAdministrativo) {
             [$ok, $error] = $administrativosService->procesarFilaIndividual(
                 (int) $request->id_periodo,
                 trim($request->documento),

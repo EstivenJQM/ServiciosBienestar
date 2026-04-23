@@ -121,7 +121,7 @@
                         </div>
                     </div>
 
-                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Familiar', 'Administrativo']))
+                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Familiar', 'Administrativo', 'Docente']))
 
                     {{-- ── Sede (contratista: por nombre) ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
@@ -156,8 +156,8 @@
                         </div>
                     </div>
 
-                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Administrativo']))
-                    {{-- ── Dependencia (contratistas y administrativos) ── --}}
+                    @if(in_array($inconsistencia->nombre_rol, ['Contratista', 'Administrativo', 'Docente']))
+                    {{-- ── Dependencia ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
                         <i class="bi bi-diagram-3 me-1"></i>Dependencia
                         @if($campo === 'dependencia')
@@ -184,8 +184,8 @@
                     <input type="hidden" name="dependencia" value="">
                     @endif
 
-                    @if($inconsistencia->nombre_rol === 'Administrativo')
-                    {{-- ── Cargo (solo administrativos) ── --}}
+                    @if(in_array($inconsistencia->nombre_rol, ['Administrativo', 'Docente']))
+                    {{-- ── Cargo ── --}}
                     <p class="fw-semibold text-muted small text-uppercase mt-3 mb-2">
                         <i class="bi bi-person-badge me-1"></i>Cargo
                         @if($campo === 'nombre_cargo')

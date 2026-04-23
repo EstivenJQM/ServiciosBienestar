@@ -255,8 +255,9 @@
 
                                     @if($entry->rol?->nombre === 'Empleado' && $entry->empleado)
                                         @php
-                                            $tipoEmp     = $entry->empleado->tipoEmpleado;
-                                            $contratista = $entry->empleado->contratista;
+                                            $tipoEmp   = $entry->empleado->tipoEmpleado;
+                                            $depNombre = $entry->empleado->dependencia?->nombre;
+                                            $cargoNom  = $entry->empleado->cargo?->nombre;
                                         @endphp
                                         <span class="vr mx-1 align-self-center"></span>
                                         @if($tipoEmp)
@@ -264,9 +265,14 @@
                                                 <i class="bi bi-briefcase"></i>{{ $tipoEmp->nombre }}
                                             </span>
                                         @endif
-                                        @if($contratista?->dependencia)
+                                        @if($depNombre)
                                             <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
-                                                <i class="bi bi-diagram-3"></i>{{ $contratista->dependencia->nombre }}
+                                                <i class="bi bi-diagram-3"></i>{{ $depNombre }}
+                                            </span>
+                                        @endif
+                                        @if($cargoNom)
+                                            <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
+                                                <i class="bi bi-person-badge"></i>{{ $cargoNom }}
                                             </span>
                                         @endif
                                     @endif

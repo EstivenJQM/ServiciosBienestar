@@ -45,7 +45,7 @@ class CargaInconsistencia extends Model
         return match(true) {
             str_contains($e, 'cargo')       => 'nombre_cargo',
             str_contains($e, 'dependencia') => 'dependencia',
-            str_contains($e, 'sede')        => in_array($this->nombre_rol, ['Contratista', 'Administrativo']) ? 'nombre_sede' : 'codigo_sede',
+            str_contains($e, 'sede')        => in_array($this->nombre_rol, ['Contratista', 'Administrativo', 'Docente']) ? 'nombre_sede' : 'codigo_sede',
             str_contains($e, 'facultad')    => 'nombre_facultad',
             str_contains($e, 'programa')    => 'nombre_programa',
             str_contains($e, 'plan')        => 'codigo_plan',
