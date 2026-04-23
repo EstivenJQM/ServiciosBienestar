@@ -4,7 +4,7 @@
     <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
         <div>
             <h2 class="mb-1">
-                <i class="bi bi-tools me-2" style="color:#196844"></i>{{ $servicio->nombre }}
+                <i class="bi bi-clipboard2-heart-fill me-2" style="color:#196844"></i>{{ $servicio->nombre }}
             </h2>
             <div class="d-flex flex-wrap gap-2 small">
                 <span class="badge bg-dark">

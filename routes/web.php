@@ -13,6 +13,7 @@ use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\CargaEstudiantesController;
 use App\Http\Controllers\CargaUsuariosController;
 use App\Http\Controllers\DependenciaController;
+use App\Http\Controllers\CargoController;
 use App\Http\Controllers\InconsistenciaController;
 use App\Http\Controllers\UsuarioController;
 
@@ -27,6 +28,7 @@ Route::resource('tipo-actividad', TipoActividadController::class)->except(['show
 
 Route::resource('sedes',        SedeController::class)->except(['show']);
 Route::resource('dependencias', DependenciaController::class)->except(['show']);
+Route::resource('cargos',       CargoController::class)->except(['show']);
 Route::resource('facultades', FacultadController::class)->except(['show'])
     ->parameters(['facultades' => 'facultad']);
 Route::get ('programas/asignacion-snies',  [ProgramaController::class, 'asignacionSnies'])

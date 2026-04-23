@@ -3,7 +3,7 @@
 @php
     $seccionActiva = match(true) {
         request()->routeIs('areas.*', 'componentes.*', 'lineas.*', 'tipo-actividad.*') => 'caracterizacion',
-        request()->routeIs('sedes.*', 'facultades.*', 'programas.*', 'dependencias.*') => 'academico',
+        request()->routeIs('sedes.*', 'facultades.*', 'programas.*', 'dependencias.*', 'cargos.*') => 'academico',
         request()->routeIs('servicios.*', 'periodos.*') => 'servicios',
         request()->routeIs('usuarios.*')   => 'usuarios',
         default => null,
@@ -202,7 +202,7 @@
             </a>
             <a href="{{ route('servicios.index') }}"
                class="sidebar-link {{ request()->routeIs('servicios.*') ? 'active' : '' }}">
-                <i class="bi bi-tools"></i> Servicios
+                <i class="bi bi-clipboard2-heart-fill"></i> Servicios
             </a>
 
         @elseif($seccionActiva === 'academico')
@@ -222,6 +222,10 @@
             <a href="{{ route('dependencias.index') }}"
                class="sidebar-link {{ request()->routeIs('dependencias.*') ? 'active' : '' }}">
                 <i class="bi bi-diagram-3-fill"></i> Dependencias
+            </a>
+            <a href="{{ route('cargos.index') }}"
+               class="sidebar-link {{ request()->routeIs('cargos.*') ? 'active' : '' }}">
+                <i class="bi bi-person-badge-fill"></i> Cargos
             </a>
 
         @elseif($seccionActiva === 'usuarios')
