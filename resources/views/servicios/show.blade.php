@@ -41,8 +41,7 @@
 
                     <p class="small text-muted mb-3">
                         Se vinculan usuarios que tengan el rol indicado activo
-                        durante el período <strong>{{ $servicio->periodo->nombre }}</strong>,
-                        independientemente de la sede en que estén registrados.
+                        durante el período <strong>{{ $servicio->periodo->nombre }}</strong>.
                     </p>
 
                     <div class="alert alert-light border p-2 mb-3">
@@ -52,7 +51,7 @@
                         <code class="small">DOCUMENTO ; ROL</code>
                         <p class="small text-muted mt-1 mb-0">
                             Ejemplo: <code>1234567 ; Estudiante</code><br>
-                            Roles válidos: <code>Estudiante</code>, <code>Graduado</code>, <code>Empleado</code>, <code>Familiar</code>
+                            Roles válidos: <code>Estudiante</code>, <code>Graduado</code>, <code>Familiar</code>, <code>Administrativo</code>, <code>Docente</code>, <code>Contratista</code>
                         </p>
                     </div>
 

@@ -43,6 +43,16 @@ class CargaServicioUsuariosService
                 continue;
             }
 
+            // Roles directos vs. sub-tipos de Empleado
+            $rolesEmpleado = ['Administrativo', 'Docente', 'Contratista'];
+            $esSubtipoEmpleado = in_array($nombreRol, $rolesEmpleado);
+
+            $rolesValidos = ['Estudiante', 'Graduado', 'Familiar', 'Administrativo', 'Docente', 'Contratista'];
+            if (! in_array($nombreRol, $rolesValidos)) {
+                $noEncontrados[] = "Fila {$fila}: rol «{$nombreRol}» no reconocido.";
+                continue;
+            }
+
             $usuario = DB::table('usuario')->where('documento', $documento)->first();
 
             if (! $usuario) {
@@ -50,13 +60,22 @@ class CargaServicioUsuariosService
                 continue;
             }
 
-            $urs = DB::table('usuario_rol_sede as urs')
+            $qUrs = DB::table('usuario_rol_sede as urs')
                 ->join('rol', 'urs.id_rol', '=', 'rol.id_rol')
                 ->where('urs.id_usuario', $usuario->id_usuario)
                 ->where('urs.id_periodo', $servicio->id_periodo)
-                ->where('rol.nombre',     $nombreRol)
-                ->where('urs.estado',     'activo')
-                ->value('urs.id_usuario_rol_sede');
+                ->where('urs.estado',     'activo');
+
+            if ($esSubtipoEmpleado) {
+                $qUrs->where('rol.nombre', 'Empleado')
+                     ->join('empleado',        'empleado.id_usuario_rol_sede',  '=', 'urs.id_usuario_rol_sede')
+                     ->join('tipo_empleado',   'tipo_empleado.id_tipo_empleado','=', 'empleado.id_tipo_empleado')
+                     ->where('tipo_empleado.nombre', $nombreRol);
+            } else {
+                $qUrs->where('rol.nombre', $nombreRol);
+            }
+
+            $urs = $qUrs->value('urs.id_usuario_rol_sede');
 
             if (! $urs) {
                 $nombre   = trim("{$usuario->primer_nombre} {$usuario->primer_apellido}");
