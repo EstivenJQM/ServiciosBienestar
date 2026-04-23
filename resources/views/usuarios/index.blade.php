@@ -9,14 +9,15 @@
 
     {{-- ── Filtros ── --}}
     @php
-        $filtrosActivos = array_filter(compact('idSede','idRol','idPeriodo','estado','busqueda'));
-        $hayFiltros     = count($filtrosActivos) > 0;
+        $nFiltros   = collect([$idSede,$idRol,$idPeriodo,$estado,$idTipoEmpleado,$idDependencia,$idCargo])->filter()->count();
+        $hayFiltros = $nFiltros > 0 || $busqueda !== '';
+        $panelAbierto = $nFiltros > 0;
     @endphp
 
     <form method="GET" action="{{ route('usuarios.index') }}" class="mb-3">
 
-        {{-- Fila 1: búsqueda + botón limpiar --}}
-        <div class="d-flex flex-wrap gap-2 align-items-end mb-2">
+        {{-- Barra superior: buscador + toggle + limpiar --}}
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
             <div class="input-group" style="max-width:400px">
                 <span class="input-group-text bg-white">
                     <i class="bi bi-search text-muted"></i>
@@ -26,67 +27,158 @@
                        placeholder="Nombre, documento o correo…">
             </div>
 
+            <button type="button"
+                    class="btn btn-outline-secondary"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#panel-filtros"
+                    aria-expanded="{{ $panelAbierto ? 'true' : 'false' }}">
+                <i class="bi bi-funnel me-1"></i>Filtros
+                @if($nFiltros > 0)
+                    <span class="badge rounded-pill ms-1" style="background:#196844">{{ $nFiltros }}</span>
+                @endif
+            </button>
+
             <button type="submit" class="btn btn-sibi">
-                <i class="bi bi-funnel me-1"></i>Filtrar
+                <i class="bi bi-search me-1"></i>Buscar
             </button>
 
             @if($hayFiltros)
                 <a href="{{ route('usuarios.index') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-lg me-1"></i>Limpiar filtros
+                    <i class="bi bi-x-lg me-1"></i>Limpiar
                 </a>
             @endif
         </div>
 
-        {{-- Fila 2: selects de filtro --}}
-        <div class="d-flex flex-wrap gap-2">
+        {{-- Panel colapsable de filtros --}}
+        <div class="collapse {{ $panelAbierto ? 'show' : '' }}" id="panel-filtros">
+            <div class="card card-body border rounded mb-2 py-3">
+                <div class="row g-3">
 
-            <select name="id_sede" class="form-select form-select-sm" style="max-width:200px">
-                <option value="">— Todas las sedes —</option>
-                @foreach($sedes as $sede)
-                    <option value="{{ $sede->id_sede }}"
-                        {{ $idSede == $sede->id_sede ? 'selected' : '' }}>
-                        [{{ $sede->codigo }}] {{ $sede->nombre }}
-                    </option>
-                @endforeach
-            </select>
+                    {{-- General --}}
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-geo-alt me-1"></i>Sede
+                        </label>
+                        <select name="id_sede" class="form-select form-select-sm">
+                            <option value="">Todas</option>
+                            @foreach($sedes as $sede)
+                                <option value="{{ $sede->id_sede }}"
+                                    {{ $idSede == $sede->id_sede ? 'selected' : '' }}>
+                                    [{{ $sede->codigo }}] {{ $sede->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <select name="id_rol" class="form-select form-select-sm" style="max-width:170px">
-                <option value="">— Todos los roles —</option>
-                @foreach($roles as $rol)
-                    <option value="{{ $rol->id_rol }}"
-                        {{ $idRol == $rol->id_rol ? 'selected' : '' }}>
-                        {{ $rol->nombre }}
-                    </option>
-                @endforeach
-            </select>
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-person-badge me-1"></i>Rol
+                        </label>
+                        <select name="id_rol" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            @foreach($roles as $rol)
+                                <option value="{{ $rol->id_rol }}"
+                                    {{ $idRol == $rol->id_rol ? 'selected' : '' }}>
+                                    {{ $rol->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <select name="id_periodo" class="form-select form-select-sm" style="max-width:160px">
-                <option value="">— Todos los períodos —</option>
-                @foreach($periodos as $periodo)
-                    <option value="{{ $periodo->id_periodo }}"
-                        {{ $idPeriodo == $periodo->id_periodo ? 'selected' : '' }}>
-                        {{ $periodo->nombre }}
-                    </option>
-                @endforeach
-            </select>
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-calendar3 me-1"></i>Período
+                        </label>
+                        <select name="id_periodo" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            @foreach($periodos as $periodo)
+                                <option value="{{ $periodo->id_periodo }}"
+                                    {{ $idPeriodo == $periodo->id_periodo ? 'selected' : '' }}>
+                                    {{ $periodo->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <select name="estado" class="form-select form-select-sm" style="max-width:150px">
-                <option value="">— Cualquier estado —</option>
-                <option value="activo"   {{ $estado === 'activo'   ? 'selected' : '' }}>Activo</option>
-                <option value="inactivo" {{ $estado === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
-            </select>
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-circle-half me-1"></i>Estado
+                        </label>
+                        <select name="estado" class="form-select form-select-sm">
+                            <option value="">Cualquiera</option>
+                            <option value="activo"   {{ $estado === 'activo'   ? 'selected' : '' }}>Activo</option>
+                            <option value="inactivo" {{ $estado === 'inactivo' ? 'selected' : '' }}>Inactivo</option>
+                        </select>
+                    </div>
 
+                    {{-- Empleado --}}
+                    <div class="col-12">
+                        <hr class="my-0">
+                        <p class="small fw-semibold text-muted text-uppercase mb-2 mt-2" style="font-size:.68rem">
+                            <i class="bi bi-briefcase me-1"></i>Empleado
+                        </p>
+                    </div>
+
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            Tipo
+                        </label>
+                        <select name="id_tipo_empleado" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            @foreach($tiposEmpleado as $tipo)
+                                <option value="{{ $tipo->id_tipo_empleado }}"
+                                    {{ $idTipoEmpleado == $tipo->id_tipo_empleado ? 'selected' : '' }}>
+                                    {{ $tipo->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-sm-6 col-md-5">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            Dependencia
+                        </label>
+                        <select name="id_dependencia" class="form-select form-select-sm">
+                            <option value="">Todas</option>
+                            @foreach($dependencias as $dep)
+                                <option value="{{ $dep->id_dependencia }}"
+                                    {{ $idDependencia == $dep->id_dependencia ? 'selected' : '' }}>
+                                    {{ $dep->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            Cargo
+                        </label>
+                        <select name="id_cargo" class="form-select form-select-sm">
+                            <option value="">Todos</option>
+                            @foreach($cargos as $cargo)
+                                <option value="{{ $cargo->id_cargo }}"
+                                    {{ $idCargo == $cargo->id_cargo ? 'selected' : '' }}>
+                                    {{ $cargo->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="mt-3 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-sibi btn-sm">
+                        <i class="bi bi-funnel me-1"></i>Aplicar filtros
+                    </button>
+                </div>
+            </div>
         </div>
+
     </form>
 
     {{-- Badges de filtros activos --}}
-    @if($hayFiltros)
+    @if($nFiltros > 0)
         <div class="d-flex flex-wrap gap-1 mb-2">
-            @if($busqueda)
-                <span class="badge bg-secondary">
-                    <i class="bi bi-search me-1"></i>«{{ $busqueda }}»
-                </span>
-            @endif
             @if($idSede)
                 @php $s = $sedes->firstWhere('id_sede', $idSede) @endphp
                 <span class="badge bg-secondary">
@@ -108,6 +200,24 @@
             @if($estado)
                 <span class="badge {{ $estado === 'activo' ? 'bg-success' : 'bg-danger' }}">
                     {{ ucfirst($estado) }}
+                </span>
+            @endif
+            @if($idTipoEmpleado)
+                @php $te = $tiposEmpleado->firstWhere('id_tipo_empleado', $idTipoEmpleado) @endphp
+                <span class="badge bg-secondary">
+                    <i class="bi bi-briefcase me-1"></i>{{ $te?->nombre ?? $idTipoEmpleado }}
+                </span>
+            @endif
+            @if($idDependencia)
+                @php $dep = $dependencias->firstWhere('id_dependencia', $idDependencia) @endphp
+                <span class="badge bg-secondary">
+                    <i class="bi bi-diagram-3 me-1"></i>{{ $dep?->nombre ?? $idDependencia }}
+                </span>
+            @endif
+            @if($idCargo)
+                @php $car = $cargos->firstWhere('id_cargo', $idCargo) @endphp
+                <span class="badge bg-secondary">
+                    <i class="bi bi-person-badge me-1"></i>{{ $car?->nombre ?? $idCargo }}
                 </span>
             @endif
         </div>

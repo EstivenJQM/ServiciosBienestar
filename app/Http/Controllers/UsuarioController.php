@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cargo;
+use App\Models\Dependencia;
 use App\Models\Periodo;
 use App\Models\Rol;
 use App\Models\Sede;
+use App\Models\TipoEmpleado;
 use App\Models\Usuario;
 use App\Models\UsuarioRolSede;
 use Illuminate\Http\Request;
@@ -19,6 +22,9 @@ class UsuarioController extends Controller
         $idRol           = $request->get('id_rol');
         $idPeriodo       = $request->get('id_periodo');
         $estado          = $request->get('estado');
+        $idTipoEmpleado  = $request->get('id_tipo_empleado');
+        $idDependencia   = $request->get('id_dependencia');
+        $idCargo         = $request->get('id_cargo');
 
         $query = Usuario::with([
             'rolesEnSedes.rol',
@@ -57,20 +63,37 @@ class UsuarioController extends Controller
             $query->whereHas('rolesEnSedes', fn($q) => $q->where('estado', $estado));
         }
 
+        if ($idTipoEmpleado) {
+            $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->where('id_tipo_empleado', $idTipoEmpleado));
+        }
+
+        if ($idDependencia) {
+            $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->where('id_dependencia', $idDependencia));
+        }
+
+        if ($idCargo) {
+            $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->where('id_cargo', $idCargo));
+        }
+
         $usuarios = $query
             ->orderBy('primer_apellido')
             ->orderBy('primer_nombre')
             ->paginate(30)
             ->withQueryString();
 
-        $sedes   = Sede::orderBy('nombre')->get();
-        $roles   = Rol::orderBy('nombre')->get();
-        $periodos = Periodo::orderByDesc('nombre')->get();
+        $sedes          = Sede::orderBy('nombre')->get();
+        $roles          = Rol::orderBy('nombre')->get();
+        $periodos       = Periodo::orderByDesc('nombre')->get();
+        $tiposEmpleado  = TipoEmpleado::orderBy('nombre')->get();
+        $dependencias   = Dependencia::orderBy('nombre')->get();
+        $cargos         = Cargo::orderBy('nombre')->get();
 
         return view('usuarios.index', compact(
             'usuarios', 'busqueda',
             'sedes', 'roles', 'periodos',
-            'idSede', 'idRol', 'idPeriodo', 'estado'
+            'tiposEmpleado', 'dependencias', 'cargos',
+            'idSede', 'idRol', 'idPeriodo', 'estado',
+            'idTipoEmpleado', 'idDependencia', 'idCargo'
         ));
     }
 
