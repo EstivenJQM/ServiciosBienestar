@@ -98,7 +98,7 @@
                                             <span class="badge" style="background-color:#20c997;font-size:.68rem">
                                                 {{ $servicio->linea->nombre }}
                                             </span>
-                                            <span class="badge" style="background-color:#6f42c1;font-size:.68rem">
+                                            <span class="badge" style="background-color:#fd7e14;font-size:.68rem">
                                                 {{ $servicio->tipoActividad->nombre }}
                                             </span>
                                         </div>
