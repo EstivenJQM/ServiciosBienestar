@@ -18,6 +18,7 @@
     <title>{{ $title }} | {{ config('app.name') }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    @stack('styles')
     <style>
         :root { --sibi-green: #196844; }
 
@@ -212,8 +213,12 @@
                 <i class="bi bi-calendar3"></i> Períodos
             </a>
             <a href="{{ route('servicios.index') }}"
-               class="sidebar-link {{ request()->routeIs('servicios.*') ? 'active' : '' }}">
+               class="sidebar-link {{ request()->routeIs('servicios.index') || request()->routeIs('servicios.show') || request()->routeIs('servicios.create') || request()->routeIs('servicios.edit') ? 'active' : '' }}">
                 <i class="bi bi-clipboard2-heart-fill"></i> Servicios
+            </a>
+            <a href="{{ route('servicios.reportes') }}"
+               class="sidebar-link {{ request()->routeIs('servicios.reportes*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> Reportes
             </a>
 
         @elseif($seccionActiva === 'academico')
@@ -280,5 +285,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@stack('scripts')
 </body>
 </html>

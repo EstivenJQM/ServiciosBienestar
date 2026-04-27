@@ -38,6 +38,12 @@ Route::post('programas/asignacion-snies',  [ProgramaController::class, 'guardarA
 Route::resource('programas', ProgramaController::class)->except(['show']);
 
 Route::resource('periodos',  PeriodoController::class)->except(['show']);
+
+Route::get('servicios/reportes',           [ServicioController::class, 'reportes'])            ->name('servicios.reportes');
+Route::get('servicios/reportes/programas', [ServicioController::class, 'programasPorFacultad'])->name('servicios.reportes.programas');
+Route::get('servicios/reportes/planes',    [ServicioController::class, 'planesPorPrograma'])   ->name('servicios.reportes.planes');
+Route::get('servicios/reportes/descargar', [ServicioController::class, 'descargar'])           ->name('servicios.reportes.descargar');
+
 Route::resource('servicios', ServicioController::class);
 Route::post  ('servicios/{servicio}/usuarios',      [ServicioController::class, 'asignarUsuarios'])   ->name('servicios.usuarios.store');
 Route::delete('servicios/{servicio}/usuarios/{urs}', [ServicioController::class, 'desasignarUsuario'])->name('servicios.usuarios.destroy');

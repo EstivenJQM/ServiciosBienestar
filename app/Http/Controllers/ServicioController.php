@@ -3,97 +3,177 @@
 namespace App\Http\Controllers;
 
 use App\Models\Area;
+use App\Models\Cargo;
 use App\Models\Componente;
+use App\Models\Dependencia;
+use App\Models\Facultad;
 use App\Models\Linea;
 use App\Models\Periodo;
+use App\Models\PlanEstudio;
+use App\Models\Programa;
 use App\Models\Sede;
 use App\Models\Servicio;
 use App\Models\TipoActividad;
+use App\Models\TipoEmpleado;
 use App\Services\CargaServicioUsuariosService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class ServicioController extends Controller
 {
+    // ──────────────────────────────────────────────────────────────
+    // Helpers
+    // ──────────────────────────────────────────────────────────────
+
+    private function parseArrayInput(Request $request, string $key): array
+    {
+        return array_values(array_filter((array) $request->input($key, [])));
+    }
+
+    private function applyServiceFilters($query, array $f): void
+    {
+        if ($f['busqueda'] !== '') {
+            $query->where('nombre', 'like', "%{$f['busqueda']}%");
+        }
+        if (!empty($f['idPeriodos']))       $query->whereIn('id_periodo', $f['idPeriodos']);
+        if (!empty($f['idSedes']))          $query->whereIn('id_sede', $f['idSedes']);
+        if (!empty($f['idAreas']))          $query->whereHas('linea.componente', fn($q) => $q->whereIn('id_area', $f['idAreas']));
+        if (!empty($f['idComponentes']))    $query->whereHas('linea', fn($q) => $q->whereIn('id_componente', $f['idComponentes']));
+        if (!empty($f['idLineas']))         $query->whereIn('id_linea', $f['idLineas']);
+        if (!empty($f['idTiposActividad'])) $query->whereIn('id_tipo_actividad', $f['idTiposActividad']);
+        if ($f['fechaDesde'])               $query->where('fecha', '>=', $f['fechaDesde']);
+        if ($f['fechaHasta'])               $query->where('fecha', '<=', $f['fechaHasta']);
+    }
+
+    private function buildBeneficiaryFilter(array $b): \Closure
+    {
+        return function ($q) use ($b) {
+            ['roles' => $roles, 'idFacultades' => $idFacultades, 'idProgramas' => $idProgramas,
+             'idPlanes' => $idPlanes, 'tiposEmpleado' => $tiposEmpleado,
+             'idDependencias' => $idDependencias, 'idCargos' => $idCargos] = $b;
+
+            if (!empty($roles)) {
+                $q->whereHas('rol', fn($r) => $r->whereIn('nombre', $roles));
+            }
+
+            $hasStudent  = !empty($idFacultades) || !empty($idProgramas) || !empty($idPlanes);
+            $hasEmployee = !empty($tiposEmpleado) || !empty($idDependencias) || !empty($idCargos);
+
+            if ($hasStudent || $hasEmployee) {
+                $q->where(function ($outer) use ($hasStudent, $hasEmployee, $idFacultades, $idProgramas, $idPlanes, $tiposEmpleado, $idDependencias, $idCargos) {
+                    if ($hasStudent) {
+                        $outer->whereHas('estudianteEgresado', fn($ee) =>
+                            $ee->whereHas('planEstudio', function ($pl) use ($idFacultades, $idProgramas, $idPlanes) {
+                                if (!empty($idPlanes)) {
+                                    $pl->whereIn('id_plan_estudio', $idPlanes);
+                                }
+                                if (!empty($idProgramas) || !empty($idFacultades)) {
+                                    $pl->whereHas('programaSede', function ($ps) use ($idFacultades, $idProgramas) {
+                                        if (!empty($idProgramas)) $ps->whereIn('id_programa', $idProgramas);
+                                        if (!empty($idFacultades)) $ps->whereHas('programa', fn($pr) => $pr->whereIn('id_facultad', $idFacultades));
+                                    });
+                                }
+                            })
+                        );
+                    }
+                    if ($hasEmployee) {
+                        $method = $hasStudent ? 'orWhereHas' : 'whereHas';
+                        $outer->$method('empleado', function ($emp) use ($tiposEmpleado, $idDependencias, $idCargos) {
+                            if (!empty($tiposEmpleado)) $emp->whereHas('tipoEmpleado', fn($t) => $t->whereIn('nombre', $tiposEmpleado));
+                            if (!empty($idDependencias)) $emp->whereIn('id_dependencia', $idDependencias);
+                            if (!empty($idCargos))       $emp->whereIn('id_cargo', $idCargos);
+                        });
+                    }
+                });
+            }
+        };
+    }
+
+    private function parseServiceFilters(Request $request): array
+    {
+        return [
+            'busqueda'        => trim($request->input('q', '')),
+            'idPeriodos'      => $this->parseArrayInput($request, 'id_periodo'),
+            'idSedes'         => $this->parseArrayInput($request, 'id_sede'),
+            'idAreas'         => $this->parseArrayInput($request, 'id_area'),
+            'idComponentes'   => $this->parseArrayInput($request, 'id_componente'),
+            'idLineas'        => $this->parseArrayInput($request, 'id_linea'),
+            'idTiposActividad'=> $this->parseArrayInput($request, 'id_tipo_actividad'),
+            'fechaDesde'      => $request->input('fecha_desde'),
+            'fechaHasta'      => $request->input('fecha_hasta'),
+        ];
+    }
+
+    private function parseBeneficiaryFilters(Request $request): array
+    {
+        return [
+            'roles'          => array_values(array_filter($request->input('roles', []))),
+            'idFacultades'   => $this->parseArrayInput($request, 'id_facultad'),
+            'idProgramas'    => $this->parseArrayInput($request, 'id_programa'),
+            'idPlanes'       => $this->parseArrayInput($request, 'id_plan_estudio'),
+            'tiposEmpleado'  => array_values(array_filter($request->input('tipos_empleado', []))),
+            'idDependencias' => $this->parseArrayInput($request, 'id_dependencia'),
+            'idCargos'       => $this->parseArrayInput($request, 'id_cargo'),
+        ];
+    }
+
+    private function hasBeneficiaryFilters(array $b): bool
+    {
+        return !empty($b['roles']) || !empty($b['idFacultades']) || !empty($b['idProgramas'])
+            || !empty($b['idPlanes']) || !empty($b['tiposEmpleado']) || !empty($b['idDependencias'])
+            || !empty($b['idCargos']);
+    }
+
+    private function dropdownData(): array
+    {
+        return [
+            'periodos'       => Periodo::orderByDesc('nombre')->get()->keyBy('id_periodo'),
+            'sedes'          => Sede::orderBy('nombre')->get(),
+            'areas'          => Area::orderBy('nombre')->get(),
+            'componentes'    => Componente::orderBy('nombre')->get(),
+            'lineas'         => Linea::orderBy('nombre')->get(),
+            'tiposActividad' => TipoActividad::orderBy('nombre')->get(),
+        ];
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // CRUD
+    // ──────────────────────────────────────────────────────────────
+
     public function index(Request $request)
     {
-        $busqueda        = trim($request->input('q', ''));
-        $idPeriodo       = $request->input('id_periodo');
-        $idSede          = $request->input('id_sede');
-        $idArea          = $request->input('id_area');
-        $idComponente    = $request->input('id_componente');
-        $idLinea         = $request->input('id_linea');
-        $idTipoActividad = $request->input('id_tipo_actividad');
-        $fechaDesde      = $request->input('fecha_desde');
-        $fechaHasta      = $request->input('fecha_hasta');
+        $f = $this->parseServiceFilters($request);
 
-        $query = Servicio::with([
-            'linea.componente.area',
-            'tipoActividad',
-            'sede',
-            'periodo',
-        ])->withCount('usuariosAsignados');
+        $query = Servicio::with(['linea.componente.area', 'tipoActividad', 'sede', 'periodo'])
+            ->withCount('usuariosAsignados');
 
-        if ($busqueda !== '') {
-            $query->where('nombre', 'like', "%{$busqueda}%");
-        }
-        if ($idPeriodo) {
-            $query->where('id_periodo', $idPeriodo);
-        }
-        if ($idSede) {
-            $query->where('id_sede', $idSede);
-        }
-        if ($idArea) {
-            $query->whereHas('linea.componente', fn($q) => $q->where('id_area', $idArea));
-        }
-        if ($idComponente) {
-            $query->whereHas('linea', fn($q) => $q->where('id_componente', $idComponente));
-        }
-        if ($idLinea) {
-            $query->where('id_linea', $idLinea);
-        }
-        if ($idTipoActividad) {
-            $query->where('id_tipo_actividad', $idTipoActividad);
-        }
-        if ($fechaDesde) {
-            $query->where('fecha', '>=', $fechaDesde);
-        }
-        if ($fechaHasta) {
-            $query->where('fecha', '<=', $fechaHasta);
-        }
+        $this->applyServiceFilters($query, $f);
 
         $coleccion = $query->orderByDesc('fecha')->get();
         $total     = $coleccion->count();
         $servicios = $coleccion->groupBy('id_periodo');
 
-        $periodos       = Periodo::orderByDesc('nombre')->get()->keyBy('id_periodo');
-        $sedes          = Sede::orderBy('nombre')->get();
-        $areas          = Area::orderBy('nombre')->get();
-        $componentes    = Componente::orderBy('nombre')->get();
-        $lineas         = Linea::orderBy('nombre')->get();
-        $tiposActividad = TipoActividad::orderBy('nombre')->get();
+        $dd = $this->dropdownData();
 
-        $hayFiltros = $busqueda !== '' || $idPeriodo || $idSede || $idArea
-                    || $idComponente || $idLinea || $idTipoActividad
-                    || $fechaDesde || $fechaHasta;
+        $nFiltros = (int)(!empty($f['idPeriodos'])) + (int)(!empty($f['idSedes']))
+                  + (int)(!empty($f['idAreas']))    + (int)(!empty($f['idComponentes']))
+                  + (int)(!empty($f['idLineas']))   + (int)(!empty($f['idTiposActividad']))
+                  + (int)($f['fechaDesde'] !== null && $f['fechaDesde'] !== '')
+                  + (int)($f['fechaHasta'] !== null && $f['fechaHasta'] !== '');
 
-        return view('servicios.index', compact(
-            'servicios', 'periodos', 'total', 'hayFiltros',
-            'busqueda', 'idPeriodo', 'idSede', 'idArea', 'idComponente',
-            'idLinea', 'idTipoActividad', 'fechaDesde', 'fechaHasta',
-            'sedes', 'areas', 'componentes', 'lineas', 'tiposActividad'
-        ));
+        $hayFiltros = $f['busqueda'] !== '' || $nFiltros > 0;
+
+        return view('servicios.index', array_merge($f, $dd, compact(
+            'servicios', 'total', 'hayFiltros', 'nFiltros'
+        )));
     }
 
     public function show(Servicio $servicio)
     {
         $servicio->load([
-            'linea.componente.area',
-            'tipoActividad',
-            'sede',
-            'periodo',
-            'usuariosAsignados.usuario',
-            'usuariosAsignados.rol',
+            'linea.componente.area', 'tipoActividad', 'sede', 'periodo',
+            'usuariosAsignados.usuario', 'usuariosAsignados.rol',
         ]);
 
         return view('servicios.show', compact('servicio'));
@@ -101,10 +181,7 @@ class ServicioController extends Controller
 
     public function create()
     {
-        $lineas   = Linea::with(['componente.area', 'tiposActividad'])
-            ->orderBy('id_componente')
-            ->orderBy('nombre')
-            ->get();
+        $lineas   = Linea::with(['componente.area', 'tiposActividad'])->orderBy('id_componente')->orderBy('nombre')->get();
         $sedes    = Sede::orderBy('nombre')->get();
         $periodos = Periodo::orderByDesc('nombre')->get();
 
@@ -114,12 +191,12 @@ class ServicioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'           => 'required|string|max:200',
-            'id_linea'         => 'required|exists:linea,id_linea',
-            'id_tipo_actividad'=> 'required|exists:tipo_actividad,id_tipo_actividad',
-            'id_sede'          => 'required|exists:sede,id_sede',
-            'fecha'            => 'required|date',
-            'id_periodo'       => 'required|exists:periodo,id_periodo',
+            'nombre'            => 'required|string|max:200',
+            'id_linea'          => 'required|exists:linea,id_linea',
+            'id_tipo_actividad' => 'required|exists:tipo_actividad,id_tipo_actividad',
+            'id_sede'           => 'required|exists:sede,id_sede',
+            'fecha'             => 'required|date',
+            'id_periodo'        => 'required|exists:periodo,id_periodo',
         ], [
             'nombre.required'            => 'El nombre del servicio es obligatorio.',
             'nombre.max'                 => 'El nombre no puede superar los 200 caracteres.',
@@ -135,15 +212,13 @@ class ServicioController extends Controller
             'id_periodo.exists'          => 'El período seleccionado no existe.',
         ]);
 
-        // Verificar que la combinación línea + tipo actividad existe en linea_tipo_actividad
-        $combinacionValida = \DB::table('linea_tipo_actividad')
+        $combinacionValida = DB::table('linea_tipo_actividad')
             ->where('id_linea', $request->id_linea)
             ->where('id_tipo_actividad', $request->id_tipo_actividad)
             ->exists();
 
-        if (! $combinacionValida) {
-            return back()->withInput()
-                ->withErrors(['id_tipo_actividad' => 'El tipo de actividad no está asociado a la línea seleccionada.']);
+        if (!$combinacionValida) {
+            return back()->withInput()->withErrors(['id_tipo_actividad' => 'El tipo de actividad no está asociado a la línea seleccionada.']);
         }
 
         Servicio::create([
@@ -155,16 +230,12 @@ class ServicioController extends Controller
             'id_periodo'        => $request->id_periodo,
         ]);
 
-        return redirect()->route('servicios.index')
-            ->with('success', 'Servicio creado correctamente.');
+        return redirect()->route('servicios.index')->with('success', 'Servicio creado correctamente.');
     }
 
     public function edit(Servicio $servicio)
     {
-        $lineas   = Linea::with(['componente.area', 'tiposActividad'])
-            ->orderBy('id_componente')
-            ->orderBy('nombre')
-            ->get();
+        $lineas   = Linea::with(['componente.area', 'tiposActividad'])->orderBy('id_componente')->orderBy('nombre')->get();
         $sedes    = Sede::orderBy('nombre')->get();
         $periodos = Periodo::orderByDesc('nombre')->get();
 
@@ -174,12 +245,12 @@ class ServicioController extends Controller
     public function update(Request $request, Servicio $servicio)
     {
         $request->validate([
-            'nombre'           => 'required|string|max:200',
-            'id_linea'         => 'required|exists:linea,id_linea',
-            'id_tipo_actividad'=> 'required|exists:tipo_actividad,id_tipo_actividad',
-            'id_sede'          => 'required|exists:sede,id_sede',
-            'fecha'            => 'required|date',
-            'id_periodo'       => 'required|exists:periodo,id_periodo',
+            'nombre'            => 'required|string|max:200',
+            'id_linea'          => 'required|exists:linea,id_linea',
+            'id_tipo_actividad' => 'required|exists:tipo_actividad,id_tipo_actividad',
+            'id_sede'           => 'required|exists:sede,id_sede',
+            'fecha'             => 'required|date',
+            'id_periodo'        => 'required|exists:periodo,id_periodo',
         ], [
             'nombre.required'            => 'El nombre del servicio es obligatorio.',
             'nombre.max'                 => 'El nombre no puede superar los 200 caracteres.',
@@ -195,14 +266,13 @@ class ServicioController extends Controller
             'id_periodo.exists'          => 'El período seleccionado no existe.',
         ]);
 
-        $combinacionValida = \DB::table('linea_tipo_actividad')
+        $combinacionValida = DB::table('linea_tipo_actividad')
             ->where('id_linea', $request->id_linea)
             ->where('id_tipo_actividad', $request->id_tipo_actividad)
             ->exists();
 
-        if (! $combinacionValida) {
-            return back()->withInput()
-                ->withErrors(['id_tipo_actividad' => 'El tipo de actividad no está asociado a la línea seleccionada.']);
+        if (!$combinacionValida) {
+            return back()->withInput()->withErrors(['id_tipo_actividad' => 'El tipo de actividad no está asociado a la línea seleccionada.']);
         }
 
         $servicio->update([
@@ -214,23 +284,17 @@ class ServicioController extends Controller
             'id_periodo'        => $request->id_periodo,
         ]);
 
-        return redirect()->route('servicios.index')
-            ->with('success', 'Servicio actualizado correctamente.');
+        return redirect()->route('servicios.index')->with('success', 'Servicio actualizado correctamente.');
     }
 
     public function destroy(Servicio $servicio)
     {
         $servicio->delete();
-
-        return redirect()->route('servicios.index')
-            ->with('success', 'Servicio eliminado correctamente.');
+        return redirect()->route('servicios.index')->with('success', 'Servicio eliminado correctamente.');
     }
 
-    public function asignarUsuarios(
-        Request $request,
-        Servicio $servicio,
-        CargaServicioUsuariosService $service
-    ) {
+    public function asignarUsuarios(Request $request, Servicio $servicio, CargaServicioUsuariosService $service)
+    {
         $request->validate([
             'archivo' => 'required|file|mimes:csv,txt|max:5120',
         ], [
@@ -241,17 +305,191 @@ class ServicioController extends Controller
 
         $resultado = $service->asignar($request->file('archivo'), $servicio);
 
-        return redirect()->route('servicios.show', $servicio)
-            ->with('resultado_asignacion', $resultado);
+        return redirect()->route('servicios.show', $servicio)->with('resultado_asignacion', $resultado);
     }
 
     public function desasignarUsuario(Servicio $servicio, int $idUrs)
     {
-        \DB::table('servicio_usuario')
-            ->where('id_servicio',         $servicio->id_servicio)
-            ->where('id_usuario_rol_sede',  $idUrs)
+        DB::table('servicio_usuario')
+            ->where('id_servicio', $servicio->id_servicio)
+            ->where('id_usuario_rol_sede', $idUrs)
             ->delete();
 
         return back()->with('success', 'Usuario desvinculado del servicio.');
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Reportes
+    // ──────────────────────────────────────────────────────────────
+
+    public function reportes(Request $request)
+    {
+        $f = $this->parseServiceFilters($request);
+        $b = $this->parseBeneficiaryFilters($request);
+
+        $query = Servicio::query();
+        $this->applyServiceFilters($query, $f);
+
+        if ($this->hasBeneficiaryFilters($b)) {
+            $query->whereHas('usuariosAsignados', $this->buildBeneficiaryFilter($b));
+        }
+
+        $totalServicios    = (clone $query)->count();
+        $servicioIds       = (clone $query)->pluck('id_servicio');
+        $totalAsignaciones = DB::table('servicio_usuario')->whereIn('id_servicio', $servicioIds)->count();
+
+        $dd = $this->dropdownData();
+
+        $facultades         = Facultad::orderBy('nombre')->get();
+        $tiposEmpleadoList  = TipoEmpleado::orderBy('nombre')->get();
+        $dependencias       = Dependencia::orderBy('nombre')->get();
+        $cargos             = Cargo::orderBy('nombre')->get();
+
+        $programasDisponibles = !empty($b['idFacultades'])
+            ? Programa::whereIn('id_facultad', $b['idFacultades'])->orderBy('nombre')->get()
+            : collect();
+
+        $planesDisponibles = !empty($b['idProgramas'])
+            ? PlanEstudio::whereHas('programaSede', fn($q) => $q->whereIn('id_programa', $b['idProgramas']))->get()
+            : collect();
+
+        $hayFiltros = $f['busqueda'] !== '' || collect($f)->except('busqueda')->flatten()->filter()->isNotEmpty()
+                   || $this->hasBeneficiaryFilters($b);
+
+        return view('servicios.reportes', array_merge($f, $b, $dd, compact(
+            'totalServicios', 'totalAsignaciones', 'hayFiltros',
+            'facultades', 'tiposEmpleadoList', 'dependencias', 'cargos',
+            'programasDisponibles', 'planesDisponibles'
+        )));
+    }
+
+    public function programasPorFacultad(Request $request)
+    {
+        $idFacultades = $this->parseArrayInput($request, 'id_facultad');
+
+        $programas = Programa::when(!empty($idFacultades), fn($q) => $q->whereIn('id_facultad', $idFacultades))
+            ->orderBy('nombre')
+            ->get(['id_programa as id', 'nombre']);
+
+        return response()->json($programas);
+    }
+
+    public function planesPorPrograma(Request $request)
+    {
+        $idProgramas = $this->parseArrayInput($request, 'id_programa');
+
+        $planes = PlanEstudio::when(!empty($idProgramas), fn($q) =>
+            $q->whereHas('programaSede', fn($ps) => $ps->whereIn('id_programa', $idProgramas))
+        )
+        ->orderBy('codigo_plan')
+        ->get()
+        ->map(fn($p) => ['id' => $p->id_plan_estudio, 'text' => 'Plan ' . $p->codigo_plan]);
+
+        return response()->json($planes);
+    }
+
+    public function descargar(Request $request)
+    {
+        $f = $this->parseServiceFilters($request);
+        $b = $this->parseBeneficiaryFilters($request);
+
+        $query = Servicio::with([
+            'linea.componente.area', 'tipoActividad', 'sede', 'periodo',
+        ]);
+
+        $this->applyServiceFilters($query, $f);
+
+        $hayBenef = $this->hasBeneficiaryFilters($b);
+        $benFilter = $this->buildBeneficiaryFilter($b);
+
+        if ($hayBenef) {
+            $query->whereHas('usuariosAsignados', $benFilter);
+        }
+
+        $query->with(['usuariosAsignados' => function ($q) use ($hayBenef, $benFilter) {
+            if ($hayBenef) {
+                $benFilter($q);
+            }
+            $q->with([
+                'usuario', 'rol', 'sede',
+                'estudianteEgresado.planEstudio.programaSede.programa.facultad',
+                'empleado.tipoEmpleado', 'empleado.dependencia', 'empleado.cargo',
+            ]);
+        }]);
+
+        $servicios = $query->orderBy('id_periodo')->orderByDesc('fecha')->get();
+
+        $filename = 'reporte_servicios_' . now()->format('Y-m-d_H-i') . '.csv';
+
+        return response()->streamDownload(function () use ($servicios) {
+            $out = fopen('php://output', 'w');
+            fputs($out, "\xEF\xBB\xBF");
+
+            fputcsv($out, [
+                'Servicio', 'Fecha', 'Período',
+                'Sede (Código)', 'Sede (Nombre)',
+                'Área', 'Componente', 'Línea', 'Tipo de Actividad',
+                'Documento', 'Nombre Completo', 'Correo',
+                'Rol', 'Estado', 'Sede Beneficiario',
+                'Facultad', 'Programa', 'Plan de Estudio', 'SNIES',
+                'Tipo Empleado', 'Dependencia', 'Cargo',
+            ]);
+
+            foreach ($servicios as $s) {
+                $baseRow = [
+                    $s->nombre,
+                    $s->fecha->format('d/m/Y'),
+                    $s->periodo?->nombre,
+                    $s->sede->codigo,
+                    $s->sede->nombre,
+                    $s->linea->componente->area->nombre,
+                    $s->linea->componente->nombre,
+                    $s->linea->nombre,
+                    $s->tipoActividad->nombre,
+                ];
+
+                if ($s->usuariosAsignados->isEmpty()) {
+                    fputcsv($out, array_merge($baseRow, array_fill(0, 13, '')));
+                    continue;
+                }
+
+                foreach ($s->usuariosAsignados as $urs) {
+                    $u      = $urs->usuario;
+                    $esEst  = in_array($urs->rol?->nombre, ['Estudiante', 'Graduado']);
+                    $esEmp  = $urs->rol?->nombre === 'Empleado';
+
+                    $facultad = $programa = $plan = $snies = '';
+                    if ($esEst && $urs->estudianteEgresado) {
+                        $pl       = $urs->estudianteEgresado->planEstudio;
+                        $ps       = $pl?->programaSede;
+                        $pr       = $ps?->programa;
+                        $facultad = $pr?->facultad?->nombre ?? '';
+                        $programa = $pr?->nombre ?? '';
+                        $plan     = $pl?->codigo_plan ?? '';
+                        $snies    = $ps?->codigo_snies ?? '';
+                    }
+
+                    $tipoEmp = $depEmp = $cargoEmp = '';
+                    if ($esEmp && $urs->empleado) {
+                        $tipoEmp  = $urs->empleado->tipoEmpleado?->nombre ?? '';
+                        $depEmp   = $urs->empleado->dependencia?->nombre ?? '';
+                        $cargoEmp = $urs->empleado->cargo?->nombre ?? '';
+                    }
+
+                    fputcsv($out, array_merge($baseRow, [
+                        $u?->documento,
+                        $u?->nombre_completo,
+                        $u?->correo,
+                        $urs->rol?->nombre,
+                        $urs->estado,
+                        $urs->sede?->nombre,
+                        $facultad, $programa, $plan, $snies,
+                        $tipoEmp, $depEmp, $cargoEmp,
+                    ]));
+                }
+            }
+
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }
