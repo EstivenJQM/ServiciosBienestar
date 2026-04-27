@@ -396,7 +396,7 @@
         ══════════════════════════════════════════════════════ --}}
         <div class="card shadow-sm mb-3">
             <div class="card-body py-3">
-                <div class="d-flex flex-wrap align-items-center gap-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
 
                     {{-- Contadores --}}
                     <div class="d-flex gap-4">
@@ -411,14 +411,14 @@
                         </div>
                     </div>
 
-                    <div class="ms-auto d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2">
                         @if($hayFiltros)
                             <a href="{{ route('servicios.reportes') }}" class="btn btn-outline-secondary btn-sm">
                                 <i class="bi bi-x-lg me-1"></i>Limpiar
                             </a>
                         @endif
 
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <button type="submit" class="btn btn-sibi btn-sm">
                             <i class="bi bi-arrow-clockwise me-1"></i>Actualizar vista previa
                         </button>
 
@@ -598,9 +598,9 @@
     function updateHojas() {
         const available = computeHojasDisponibles();
         document.querySelectorAll('.hoja-row').forEach(row => {
-            const hoja  = row.dataset.hoja;
-            const cb    = row.querySelector('.check-hoja');
-            const show  = available.includes(hoja);
+            const hoja = row.dataset.hoja;
+            const cb   = row.querySelector('.check-hoja');
+            const show = available.includes(hoja);
             row.style.display = show ? '' : 'none';
             cb.disabled = !show;
             if (!show) cb.checked = false;
