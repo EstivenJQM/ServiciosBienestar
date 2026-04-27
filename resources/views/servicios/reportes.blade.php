@@ -155,7 +155,7 @@
 
                         {{-- Rango fechas --}}
                         <div class="col-12"><hr class="my-0">
-                            <p class="small fw-semibold text-muted text-uppercase mb-2 mt-2" style="font-size:.68rem">
+                            <p class="small fw-semibold text-muted text-uppercase mb-0 mt-2" style="font-size:.68rem">
                                 <i class="bi bi-calendar-range me-1"></i>Rango de fechas
                             </p>
                         </div>
