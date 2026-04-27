@@ -12,6 +12,7 @@
     }
     .filter-card-header:hover { background: #e9ecef; }
     .check-role, .check-tipo-emp { cursor: pointer; }
+    .check-hoja { accent-color: #196844; width: .85em; height: .85em; border-radius: 50%; flex-shrink: 0; cursor: pointer; }
 </style>
 @endpush
 
@@ -337,13 +338,13 @@
         ══════════════════════════════════════════════════════ --}}
         @php
             $hojasInfo = [
-                'resumen'         => ['label' => 'Resumen',         'icon' => 'bi-bar-chart-fill',   'color' => '#196844'],
-                'por_servicios'   => ['label' => 'Por Servicios',   'icon' => 'bi-people-fill',      'color' => '#0d6efd'],
-                'estudiantes'     => ['label' => 'Estudiantes',     'icon' => 'bi-mortarboard-fill', 'color' => '#20c997'],
-                'graduados'       => ['label' => 'Graduados',       'icon' => 'bi-award-fill',       'color' => '#6f42c1'],
-                'administrativos' => ['label' => 'Administrativos', 'icon' => 'bi-person-workspace', 'color' => '#0d6efd'],
-                'contratistas'    => ['label' => 'Contratistas',    'icon' => 'bi-file-person-fill', 'color' => '#6f42c1'],
-                'docentes'        => ['label' => 'Docentes',        'icon' => 'bi-person-video3',    'color' => '#fd7e14'],
+                'resumen'         => ['label' => 'Resumen',         'icon' => 'bi-bar-chart-fill',      'color' => '#196844'],
+                'por_servicios'   => ['label' => 'Por Servicios',   'icon' => 'bi-people-fill',         'color' => '#0d6efd'],
+                'estudiantes'     => ['label' => 'Estudiantes',     'icon' => 'bi-person-fill',         'color' => '#20c997'],
+                'graduados'       => ['label' => 'Graduados',       'icon' => 'bi-mortarboard-fill',    'color' => '#6f42c1'],
+                'administrativos' => ['label' => 'Administrativos', 'icon' => 'bi-person-gear',         'color' => '#0d6efd'],
+                'contratistas'    => ['label' => 'Contratistas',    'icon' => 'bi-file-earmark-person', 'color' => '#6f42c1'],
+                'docentes'        => ['label' => 'Docentes',        'icon' => 'bi-person-badge-fill',   'color' => '#fd7e14'],
             ];
             $siempreDisponibles = ['resumen', 'por_servicios'];
         @endphp
@@ -370,13 +371,13 @@
                         @foreach($hojasInfo as $key => $info)
                             @php $disponible = in_array($key, $hojasDisponibles); @endphp
                             <div class="col-sm-6 col-md-4 hoja-row" data-hoja="{{ $key }}" {{ !$disponible ? 'style=display:none' : '' }}>
-                                <div class="form-check border rounded p-2 ps-4" style="background:#f8f9fa">
-                                    <input class="form-check-input check-hoja" type="checkbox"
+                                <div class="border rounded p-2 px-3 d-flex align-items-center gap-2" style="background:#f8f9fa">
+                                    <input class="check-hoja" type="checkbox"
                                            name="hojas[]" value="{{ $key }}"
                                            id="hoja-{{ $key }}"
                                            {{ in_array($key, $hojasSeleccionadas) ? 'checked' : '' }}
                                            {{ !$disponible ? 'disabled' : '' }}>
-                                    <label class="form-check-label d-flex align-items-center gap-2" for="hoja-{{ $key }}">
+                                    <label class="d-flex align-items-center gap-2 flex-grow-1 mb-0" style="cursor:pointer" for="hoja-{{ $key }}">
                                         <i class="bi {{ $info['icon'] }}" style="color:{{ $info['color'] }}"></i>
                                         <span class="fw-semibold" style="font-size:.85rem">{{ $info['label'] }}</span>
                                         @if(in_array($key, $siempreDisponibles))
