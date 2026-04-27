@@ -1,5 +1,9 @@
 <x-layout title="Usuarios">
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+@endpush
+
     {{-- ── Cabecera ── --}}
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h2 class="mb-0">
@@ -9,28 +13,27 @@
 
     {{-- ── Filtros ── --}}
     @php
-        $nFiltros   = collect([$idSede,$idRol,$idPeriodo,$estado,$idTipoEmpleado,$idDependencia,$idCargo])->filter()->count();
-        $hayFiltros = $nFiltros > 0 || $busqueda !== '';
+        $nFiltros = (int)(!empty($idSedes)) + (int)(!empty($idRoles)) + (int)(!empty($idPeriodos))
+                  + (int)($estado !== '' && $estado !== null)
+                  + (int)(!empty($idTiposEmpleado)) + (int)(!empty($idDependencias)) + (int)(!empty($idCargos))
+                  + (int)(!empty($idFacultades))    + (int)(!empty($idProgramas));
+        $hayFiltros   = $nFiltros > 0 || $busqueda !== '';
         $panelAbierto = $nFiltros > 0;
     @endphp
 
     <form method="GET" action="{{ route('usuarios.index') }}" class="mb-3">
 
-        {{-- Barra superior: buscador + toggle + limpiar --}}
         <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
             <div class="input-group" style="max-width:400px">
                 <span class="input-group-text bg-white">
                     <i class="bi bi-search text-muted"></i>
                 </span>
                 <input type="text" name="q" value="{{ $busqueda }}"
-                       class="form-control"
-                       placeholder="Nombre, documento o correo…">
+                       class="form-control" placeholder="Nombre, documento o correo…">
             </div>
 
-            <button type="button"
-                    class="btn btn-outline-secondary"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#panel-filtros"
+            <button type="button" class="btn btn-outline-secondary"
+                    data-bs-toggle="collapse" data-bs-target="#panel-filtros"
                     aria-expanded="{{ $panelAbierto ? 'true' : 'false' }}">
                 <i class="bi bi-funnel me-1"></i>Filtros
                 @if($nFiltros > 0)
@@ -49,21 +52,18 @@
             @endif
         </div>
 
-        {{-- Panel colapsable de filtros --}}
         <div class="collapse {{ $panelAbierto ? 'show' : '' }}" id="panel-filtros">
             <div class="card card-body border rounded mb-2 py-3">
                 <div class="row g-3">
 
-                    {{-- General --}}
+                    {{-- ── General ── --}}
                     <div class="col-sm-6 col-md-3">
                         <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
                             <i class="bi bi-geo-alt me-1"></i>Sede
                         </label>
-                        <select name="id_sede" class="form-select form-select-sm">
-                            <option value="">Todas</option>
+                        <select name="id_sede[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todas">
                             @foreach($sedes as $sede)
-                                <option value="{{ $sede->id_sede }}"
-                                    {{ $idSede == $sede->id_sede ? 'selected' : '' }}>
+                                <option value="{{ $sede->id_sede }}" {{ in_array($sede->id_sede, $idSedes) ? 'selected' : '' }}>
                                     [{{ $sede->codigo }}] {{ $sede->nombre }}
                                 </option>
                             @endforeach
@@ -74,11 +74,9 @@
                         <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
                             <i class="bi bi-person-badge me-1"></i>Rol
                         </label>
-                        <select name="id_rol" class="form-select form-select-sm">
-                            <option value="">Todos</option>
+                        <select name="id_rol[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todos">
                             @foreach($roles as $rol)
-                                <option value="{{ $rol->id_rol }}"
-                                    {{ $idRol == $rol->id_rol ? 'selected' : '' }}>
+                                <option value="{{ $rol->id_rol }}" {{ in_array($rol->id_rol, $idRoles) ? 'selected' : '' }}>
                                     {{ $rol->nombre }}
                                 </option>
                             @endforeach
@@ -89,11 +87,9 @@
                         <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
                             <i class="bi bi-calendar3 me-1"></i>Período
                         </label>
-                        <select name="id_periodo" class="form-select form-select-sm">
-                            <option value="">Todos</option>
+                        <select name="id_periodo[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todos">
                             @foreach($periodos as $periodo)
-                                <option value="{{ $periodo->id_periodo }}"
-                                    {{ $idPeriodo == $periodo->id_periodo ? 'selected' : '' }}>
+                                <option value="{{ $periodo->id_periodo }}" {{ in_array($periodo->id_periodo, $idPeriodos) ? 'selected' : '' }}>
                                     {{ $periodo->nombre }}
                                 </option>
                             @endforeach
@@ -111,11 +107,45 @@
                         </select>
                     </div>
 
-                    {{-- Empleado --}}
+                    {{-- ── Académico ── --}}
                     <div class="col-12">
                         <hr class="my-0">
-                        <p class="small fw-semibold text-muted text-uppercase mb-2 mt-2" style="font-size:.68rem">
-                            <i class="bi bi-briefcase me-1"></i>Empleado
+                        <p class="small fw-semibold text-muted text-uppercase mb-0 mt-2" style="font-size:.68rem">
+                            <i class="bi bi-mortarboard-fill me-1"></i>Académico
+                        </p>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-building me-1"></i>Facultad
+                        </label>
+                        <select name="id_facultad[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todas">
+                            @foreach($facultades as $fac)
+                                <option value="{{ $fac->id_facultad }}" {{ in_array($fac->id_facultad, $idFacultades) ? 'selected' : '' }}>
+                                    {{ $fac->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-sm-6 col-md-8">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-journal-bookmark-fill me-1"></i>Programa
+                        </label>
+                        <select name="id_programa[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todos">
+                            @foreach($programas as $prog)
+                                <option value="{{ $prog->id_programa }}" {{ in_array($prog->id_programa, $idProgramas) ? 'selected' : '' }}>
+                                    {{ $prog->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- ── Empleado ── --}}
+                    <div class="col-12">
+                        <hr class="my-0">
+                        <p class="small fw-semibold text-muted text-uppercase mb-0 mt-2" style="font-size:.68rem">
+                            <i class="bi bi-briefcase-fill me-1"></i>Empleado
                         </p>
                     </div>
 
@@ -123,11 +153,9 @@
                         <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
                             Tipo
                         </label>
-                        <select name="id_tipo_empleado" class="form-select form-select-sm">
-                            <option value="">Todos</option>
+                        <select name="id_tipo_empleado[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todos">
                             @foreach($tiposEmpleado as $tipo)
-                                <option value="{{ $tipo->id_tipo_empleado }}"
-                                    {{ $idTipoEmpleado == $tipo->id_tipo_empleado ? 'selected' : '' }}>
+                                <option value="{{ $tipo->id_tipo_empleado }}" {{ in_array($tipo->id_tipo_empleado, $idTiposEmpleado) ? 'selected' : '' }}>
                                     {{ $tipo->nombre }}
                                 </option>
                             @endforeach
@@ -136,13 +164,11 @@
 
                     <div class="col-sm-6 col-md-5">
                         <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
-                            Dependencia
+                            <i class="bi bi-diagram-3 me-1"></i>Dependencia
                         </label>
-                        <select name="id_dependencia" class="form-select form-select-sm">
-                            <option value="">Todas</option>
+                        <select name="id_dependencia[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todas">
                             @foreach($dependencias as $dep)
-                                <option value="{{ $dep->id_dependencia }}"
-                                    {{ $idDependencia == $dep->id_dependencia ? 'selected' : '' }}>
+                                <option value="{{ $dep->id_dependencia }}" {{ in_array($dep->id_dependencia, $idDependencias) ? 'selected' : '' }}>
                                     {{ $dep->nombre }}
                                 </option>
                             @endforeach
@@ -151,13 +177,11 @@
 
                     <div class="col-sm-6 col-md-4">
                         <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
-                            Cargo
+                            <i class="bi bi-person-badge me-1"></i>Cargo
                         </label>
-                        <select name="id_cargo" class="form-select form-select-sm">
-                            <option value="">Todos</option>
+                        <select name="id_cargo[]" multiple class="form-select form-select-sm ts-filter" data-placeholder="Todos">
                             @foreach($cargos as $cargo)
-                                <option value="{{ $cargo->id_cargo }}"
-                                    {{ $idCargo == $cargo->id_cargo ? 'selected' : '' }}>
+                                <option value="{{ $cargo->id_cargo }}" {{ in_array($cargo->id_cargo, $idCargos) ? 'selected' : '' }}>
                                     {{ $cargo->nombre }}
                                 </option>
                             @endforeach
@@ -179,47 +203,33 @@
     {{-- Badges de filtros activos --}}
     @if($nFiltros > 0)
         <div class="d-flex flex-wrap gap-1 mb-2">
-            @if($idSede)
-                @php $s = $sedes->firstWhere('id_sede', $idSede) @endphp
-                <span class="badge bg-secondary">
-                    <i class="bi bi-geo-alt me-1"></i>{{ $s?->nombre ?? $idSede }}
-                </span>
-            @endif
-            @if($idRol)
-                @php $r = $roles->firstWhere('id_rol', $idRol) @endphp
-                <span class="badge bg-secondary">
-                    <i class="bi bi-person-badge me-1"></i>{{ $r?->nombre ?? $idRol }}
-                </span>
-            @endif
-            @if($idPeriodo)
-                @php $p = $periodos->firstWhere('id_periodo', $idPeriodo) @endphp
-                <span class="badge bg-secondary">
-                    <i class="bi bi-calendar3 me-1"></i>{{ $p?->nombre ?? $idPeriodo }}
-                </span>
-            @endif
+            @foreach($sedes->whereIn('id_sede', $idSedes) as $s)
+                <span class="badge bg-secondary"><i class="bi bi-geo-alt me-1"></i>{{ $s->nombre }}</span>
+            @endforeach
+            @foreach($roles->whereIn('id_rol', $idRoles) as $r)
+                <span class="badge bg-secondary"><i class="bi bi-person-badge me-1"></i>{{ $r->nombre }}</span>
+            @endforeach
+            @foreach($periodos->whereIn('id_periodo', $idPeriodos) as $p)
+                <span class="badge bg-secondary"><i class="bi bi-calendar3 me-1"></i>{{ $p->nombre }}</span>
+            @endforeach
             @if($estado)
-                <span class="badge {{ $estado === 'activo' ? 'bg-success' : 'bg-danger' }}">
-                    {{ ucfirst($estado) }}
-                </span>
+                <span class="badge {{ $estado === 'activo' ? 'bg-success' : 'bg-danger' }}">{{ ucfirst($estado) }}</span>
             @endif
-            @if($idTipoEmpleado)
-                @php $te = $tiposEmpleado->firstWhere('id_tipo_empleado', $idTipoEmpleado) @endphp
-                <span class="badge bg-secondary">
-                    <i class="bi bi-briefcase me-1"></i>{{ $te?->nombre ?? $idTipoEmpleado }}
-                </span>
-            @endif
-            @if($idDependencia)
-                @php $dep = $dependencias->firstWhere('id_dependencia', $idDependencia) @endphp
-                <span class="badge bg-secondary">
-                    <i class="bi bi-diagram-3 me-1"></i>{{ $dep?->nombre ?? $idDependencia }}
-                </span>
-            @endif
-            @if($idCargo)
-                @php $car = $cargos->firstWhere('id_cargo', $idCargo) @endphp
-                <span class="badge bg-secondary">
-                    <i class="bi bi-person-badge me-1"></i>{{ $car?->nombre ?? $idCargo }}
-                </span>
-            @endif
+            @foreach($facultades->whereIn('id_facultad', $idFacultades) as $fac)
+                <span class="badge bg-secondary"><i class="bi bi-building me-1"></i>{{ $fac->nombre }}</span>
+            @endforeach
+            @foreach($programas->whereIn('id_programa', $idProgramas) as $prog)
+                <span class="badge bg-secondary"><i class="bi bi-journal-bookmark me-1"></i>{{ $prog->nombre }}</span>
+            @endforeach
+            @foreach($tiposEmpleado->whereIn('id_tipo_empleado', $idTiposEmpleado) as $te)
+                <span class="badge bg-secondary"><i class="bi bi-briefcase me-1"></i>{{ $te->nombre }}</span>
+            @endforeach
+            @foreach($dependencias->whereIn('id_dependencia', $idDependencias) as $dep)
+                <span class="badge bg-secondary"><i class="bi bi-diagram-3 me-1"></i>{{ $dep->nombre }}</span>
+            @endforeach
+            @foreach($cargos->whereIn('id_cargo', $idCargos) as $car)
+                <span class="badge bg-secondary"><i class="bi bi-person-badge me-1"></i>{{ $car->nombre }}</span>
+            @endforeach
         </div>
     @endif
 
@@ -403,6 +413,19 @@
             {{ $usuarios->links() }}
         </div>
     @endif
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.querySelectorAll('.ts-filter').forEach(el => {
+        new TomSelect(el, {
+            plugins: ['remove_button'],
+            maxOptions: null,
+            placeholder: el.dataset.placeholder || 'Seleccionar…',
+        });
+    });
+</script>
+@endpush
 
 <script>
     const STORAGE_KEY = 'usuarios_open';

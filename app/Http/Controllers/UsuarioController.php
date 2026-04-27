@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Cargo;
 use App\Models\Dependencia;
+use App\Models\Facultad;
 use App\Models\Periodo;
+use App\Models\Programa;
 use App\Models\Rol;
 use App\Models\Sede;
 use App\Models\TipoEmpleado;
@@ -15,16 +17,23 @@ use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
 {
+    private function parseArr(Request $request, string $key): array
+    {
+        return array_values(array_filter((array) $request->input($key, [])));
+    }
+
     public function index(Request $request)
     {
         $busqueda        = trim($request->get('q', ''));
-        $idSede          = $request->get('id_sede');
-        $idRol           = $request->get('id_rol');
-        $idPeriodo       = $request->get('id_periodo');
+        $idSedes         = $this->parseArr($request, 'id_sede');
+        $idRoles         = $this->parseArr($request, 'id_rol');
+        $idPeriodos      = $this->parseArr($request, 'id_periodo');
         $estado          = $request->get('estado');
-        $idTipoEmpleado  = $request->get('id_tipo_empleado');
-        $idDependencia   = $request->get('id_dependencia');
-        $idCargo         = $request->get('id_cargo');
+        $idTiposEmpleado = $this->parseArr($request, 'id_tipo_empleado');
+        $idDependencias  = $this->parseArr($request, 'id_dependencia');
+        $idCargos        = $this->parseArr($request, 'id_cargo');
+        $idFacultades    = $this->parseArr($request, 'id_facultad');
+        $idProgramas     = $this->parseArr($request, 'id_programa');
 
         $query = Usuario::with([
             'rolesEnSedes.rol',
@@ -47,33 +56,15 @@ class UsuarioController extends Controller
             );
         }
 
-        if ($idSede) {
-            $query->whereHas('rolesEnSedes', fn($q) => $q->where('id_sede', $idSede));
-        }
-
-        if ($idRol) {
-            $query->whereHas('rolesEnSedes', fn($q) => $q->where('id_rol', $idRol));
-        }
-
-        if ($idPeriodo) {
-            $query->whereHas('rolesEnSedes', fn($q) => $q->where('id_periodo', $idPeriodo));
-        }
-
-        if ($estado) {
-            $query->whereHas('rolesEnSedes', fn($q) => $q->where('estado', $estado));
-        }
-
-        if ($idTipoEmpleado) {
-            $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->where('id_tipo_empleado', $idTipoEmpleado));
-        }
-
-        if ($idDependencia) {
-            $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->where('id_dependencia', $idDependencia));
-        }
-
-        if ($idCargo) {
-            $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->where('id_cargo', $idCargo));
-        }
+        if (!empty($idSedes))         $query->whereHas('rolesEnSedes', fn($q) => $q->whereIn('id_sede', $idSedes));
+        if (!empty($idRoles))         $query->whereHas('rolesEnSedes', fn($q) => $q->whereIn('id_rol', $idRoles));
+        if (!empty($idPeriodos))      $query->whereHas('rolesEnSedes', fn($q) => $q->whereIn('id_periodo', $idPeriodos));
+        if ($estado)                  $query->whereHas('rolesEnSedes', fn($q) => $q->where('estado', $estado));
+        if (!empty($idTiposEmpleado)) $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->whereIn('id_tipo_empleado', $idTiposEmpleado));
+        if (!empty($idDependencias))  $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->whereIn('id_dependencia', $idDependencias));
+        if (!empty($idCargos))        $query->whereHas('rolesEnSedes.empleado', fn($q) => $q->whereIn('id_cargo', $idCargos));
+        if (!empty($idFacultades))    $query->whereHas('rolesEnSedes.estudianteEgresado.planEstudio.programaSede.programa', fn($q) => $q->whereIn('id_facultad', $idFacultades));
+        if (!empty($idProgramas))     $query->whereHas('rolesEnSedes.estudianteEgresado.planEstudio.programaSede', fn($q) => $q->whereIn('id_programa', $idProgramas));
 
         $usuarios = $query
             ->orderBy('primer_apellido')
@@ -81,19 +72,20 @@ class UsuarioController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $sedes          = Sede::orderBy('nombre')->get();
-        $roles          = Rol::orderBy('nombre')->get();
-        $periodos       = Periodo::orderByDesc('nombre')->get();
-        $tiposEmpleado  = TipoEmpleado::orderBy('nombre')->get();
-        $dependencias   = Dependencia::orderBy('nombre')->get();
-        $cargos         = Cargo::orderBy('nombre')->get();
+        $sedes         = Sede::orderBy('nombre')->get();
+        $roles         = Rol::orderBy('nombre')->get();
+        $periodos      = Periodo::orderByDesc('nombre')->get();
+        $tiposEmpleado = TipoEmpleado::orderBy('nombre')->get();
+        $dependencias  = Dependencia::orderBy('nombre')->get();
+        $cargos        = Cargo::orderBy('nombre')->get();
+        $facultades    = Facultad::orderBy('nombre')->get();
+        $programas     = Programa::orderBy('nombre')->get();
 
         return view('usuarios.index', compact(
             'usuarios', 'busqueda',
-            'sedes', 'roles', 'periodos',
-            'tiposEmpleado', 'dependencias', 'cargos',
-            'idSede', 'idRol', 'idPeriodo', 'estado',
-            'idTipoEmpleado', 'idDependencia', 'idCargo'
+            'sedes', 'roles', 'periodos', 'tiposEmpleado', 'dependencias', 'cargos', 'facultades', 'programas',
+            'idSedes', 'idRoles', 'idPeriodos', 'estado',
+            'idTiposEmpleado', 'idDependencias', 'idCargos', 'idFacultades', 'idProgramas'
         ));
     }
 
