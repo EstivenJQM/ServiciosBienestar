@@ -25,7 +25,6 @@
         /* ── Top navbar ── */
         .navbar-top {
             background-color: var(--sibi-green);
-            position: relative;
         }
         .navbar-top .nav-link {
             color: rgba(255,255,255,.8);
