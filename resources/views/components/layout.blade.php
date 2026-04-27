@@ -2,6 +2,7 @@
 
 @php
     $seccionActiva = match(true) {
+        request()->routeIs('dashboard', 'dashboard.alt') => 'dashboard',
         request()->routeIs('areas.*', 'componentes.*', 'lineas.*', 'tipo-actividad.*') => 'caracterizacion',
         request()->routeIs('sedes.*', 'facultades.*', 'programas.*', 'dependencias.*', 'cargos.*') => 'academico',
         request()->routeIs('servicios.*', 'periodos.*') => 'servicios',
@@ -152,6 +153,12 @@
     <div class="collapse navbar-collapse" id="topMenu">
         <ul class="navbar-nav gap-1">
             <li class="nav-item">
+                <a class="nav-link {{ $seccionActiva === 'dashboard' ? 'active' : '' }}"
+                   href="{{ route('dashboard') }}">
+                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link {{ $seccionActiva === 'caracterizacion' ? 'active' : '' }}"
                    href="{{ route('areas.index') }}">
                     <i class="bi bi-puzzle-fill me-1"></i>Caracterización
@@ -182,7 +189,8 @@
 {{-- ═══════════════════ BODY: SIDEBAR + CONTENT ═══════════════════ --}}
 <div id="page-wrapper">
 
-    {{-- ── Sidebar ── --}}
+    {{-- ── Sidebar (oculto en dashboard) ── --}}
+    @if($seccionActiva !== 'dashboard')
     <aside id="sidebar">
 
         @if($seccionActiva === 'caracterizacion')
@@ -268,6 +276,7 @@
         @endif
 
     </aside>
+    @endif
 
     {{-- ── Main content ── --}}
     <main id="main-content">

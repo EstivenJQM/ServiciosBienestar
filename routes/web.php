@@ -15,11 +15,11 @@ use App\Http\Controllers\CargaUsuariosController;
 use App\Http\Controllers\DependenciaController;
 use App\Http\Controllers\CargoController;
 use App\Http\Controllers\InconsistenciaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsuarioController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.alt');
 
 Route::resource('areas',      AreaController::class)->except(['show']);
 Route::resource('componentes', ComponenteController::class)->except(['show']);
