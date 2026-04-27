@@ -2,32 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Area;
+use App\Models\Componente;
 use App\Models\Linea;
 use App\Models\Periodo;
 use App\Models\Sede;
 use App\Models\Servicio;
+use App\Models\TipoActividad;
 use App\Services\CargaServicioUsuariosService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class ServicioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $servicios = Servicio::with([
+        $busqueda        = trim($request->input('q', ''));
+        $idPeriodo       = $request->input('id_periodo');
+        $idSede          = $request->input('id_sede');
+        $idArea          = $request->input('id_area');
+        $idComponente    = $request->input('id_componente');
+        $idLinea         = $request->input('id_linea');
+        $idTipoActividad = $request->input('id_tipo_actividad');
+        $fechaDesde      = $request->input('fecha_desde');
+        $fechaHasta      = $request->input('fecha_hasta');
+
+        $query = Servicio::with([
             'linea.componente.area',
             'tipoActividad',
             'sede',
             'periodo',
-        ])
-            ->withCount('usuariosAsignados')
-            ->orderByDesc('fecha')
-            ->get()
-            ->groupBy('id_periodo');
+        ])->withCount('usuariosAsignados');
 
-        $periodos = Periodo::orderByDesc('nombre')->get()->keyBy('id_periodo');
+        if ($busqueda !== '') {
+            $query->where('nombre', 'like', "%{$busqueda}%");
+        }
+        if ($idPeriodo) {
+            $query->where('id_periodo', $idPeriodo);
+        }
+        if ($idSede) {
+            $query->where('id_sede', $idSede);
+        }
+        if ($idArea) {
+            $query->whereHas('linea.componente', fn($q) => $q->where('id_area', $idArea));
+        }
+        if ($idComponente) {
+            $query->whereHas('linea', fn($q) => $q->where('id_componente', $idComponente));
+        }
+        if ($idLinea) {
+            $query->where('id_linea', $idLinea);
+        }
+        if ($idTipoActividad) {
+            $query->where('id_tipo_actividad', $idTipoActividad);
+        }
+        if ($fechaDesde) {
+            $query->where('fecha', '>=', $fechaDesde);
+        }
+        if ($fechaHasta) {
+            $query->where('fecha', '<=', $fechaHasta);
+        }
 
-        return view('servicios.index', compact('servicios', 'periodos'));
+        $coleccion = $query->orderByDesc('fecha')->get();
+        $total     = $coleccion->count();
+        $servicios = $coleccion->groupBy('id_periodo');
+
+        $periodos       = Periodo::orderByDesc('nombre')->get()->keyBy('id_periodo');
+        $sedes          = Sede::orderBy('nombre')->get();
+        $areas          = Area::orderBy('nombre')->get();
+        $componentes    = Componente::orderBy('nombre')->get();
+        $lineas         = Linea::orderBy('nombre')->get();
+        $tiposActividad = TipoActividad::orderBy('nombre')->get();
+
+        $hayFiltros = $busqueda !== '' || $idPeriodo || $idSede || $idArea
+                    || $idComponente || $idLinea || $idTipoActividad
+                    || $fechaDesde || $fechaHasta;
+
+        return view('servicios.index', compact(
+            'servicios', 'periodos', 'total', 'hayFiltros',
+            'busqueda', 'idPeriodo', 'idSede', 'idArea', 'idComponente',
+            'idLinea', 'idTipoActividad', 'fechaDesde', 'fechaHasta',
+            'sedes', 'areas', 'componentes', 'lineas', 'tiposActividad'
+        ));
     }
 
     public function show(Servicio $servicio)

@@ -24,6 +24,7 @@
         /* ── Top navbar ── */
         .navbar-top {
             background-color: var(--sibi-green);
+            position: relative;
         }
         .navbar-top .nav-link {
             color: rgba(255,255,255,.8);
@@ -41,6 +42,13 @@
             color: #fff;
             font-weight: 700;
             letter-spacing: .5px;
+        }
+        @media (min-width: 992px) {
+            #topMenu {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
 
         /* ── Sidebar ── */
@@ -135,13 +143,13 @@
 
 {{-- ═══════════════════ TOP NAVBAR ═══════════════════ --}}
 <nav class="navbar navbar-top navbar-expand-lg px-3 sticky-top" style="height:56px">
-    <a class="navbar-brand me-4" href="/">SIBI</a>
+    <a class="navbar-brand me-4" href="/">BIENESTAR</a>
 
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#topMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse justify-content-center" id="topMenu">
+    <div class="collapse navbar-collapse" id="topMenu">
         <ul class="navbar-nav gap-1">
             <li class="nav-item">
                 <a class="nav-link {{ $seccionActiva === 'caracterizacion' ? 'active' : '' }}"
