@@ -125,6 +125,28 @@ class ServicioController extends Controller
             || !empty($b['idCargos']);
     }
 
+    private function computeHojasDisponibles(array $b): array
+    {
+        $roles    = $b['roles'];
+        $tipos    = $b['tiposEmpleado'];
+        $allRoles = empty($roles);
+        $allTipos = empty($tipos);
+
+        $hojas = ['resumen', 'por_servicios'];
+
+        if ($allRoles || in_array('Estudiante', $roles)) $hojas[] = 'estudiantes';
+        if ($allRoles || in_array('Graduado',   $roles)) $hojas[] = 'graduados';
+
+        $hasEmpleado = $allRoles || in_array('Empleado', $roles);
+        if ($hasEmpleado) {
+            if ($allTipos || in_array('Administrativo', $tipos)) $hojas[] = 'administrativos';
+            if ($allTipos || in_array('Contratista',    $tipos)) $hojas[] = 'contratistas';
+            if ($allTipos || in_array('Docente',        $tipos)) $hojas[] = 'docentes';
+        }
+
+        return $hojas;
+    }
+
     private function dropdownData(): array
     {
         return [
@@ -356,10 +378,20 @@ class ServicioController extends Controller
         $hayFiltros = $f['busqueda'] !== '' || collect($f)->except('busqueda')->flatten()->filter()->isNotEmpty()
                    || $this->hasBeneficiaryFilters($b);
 
+        $hojasDisponibles   = $this->computeHojasDisponibles($b);
+        $hojasSeleccionadas = array_values(array_intersect(
+            $this->parseArrayInput($request, 'hojas'),
+            $hojasDisponibles,
+        ));
+        if (empty($hojasSeleccionadas)) {
+            $hojasSeleccionadas = $hojasDisponibles;
+        }
+
         return view('servicios.reportes', array_merge($f, $b, $dd, compact(
             'totalServicios', 'totalAsignaciones', 'hayFiltros',
             'facultades', 'tiposEmpleadoList', 'dependencias', 'cargos',
-            'programasDisponibles', 'planesDisponibles'
+            'programasDisponibles', 'planesDisponibles',
+            'hojasDisponibles', 'hojasSeleccionadas'
         )));
     }
 
@@ -393,103 +425,46 @@ class ServicioController extends Controller
         $f = $this->parseServiceFilters($request);
         $b = $this->parseBeneficiaryFilters($request);
 
-        $query = Servicio::with([
-            'linea.componente.area', 'tipoActividad', 'sede', 'periodo',
-        ]);
+        $hojasDisponibles   = $this->computeHojasDisponibles($b);
+        $hojasSeleccionadas = array_values(array_intersect(
+            $this->parseArrayInput($request, 'hojas'),
+            $hojasDisponibles,
+        ));
+        $hojas = empty($hojasSeleccionadas) ? $hojasDisponibles : $hojasSeleccionadas;
+
+        $query     = Servicio::query();
+        $hayBenef  = $this->hasBeneficiaryFilters($b);
+        $benFilter = $this->buildBeneficiaryFilter($b);
 
         $this->applyServiceFilters($query, $f);
-
-        $hayBenef = $this->hasBeneficiaryFilters($b);
-        $benFilter = $this->buildBeneficiaryFilter($b);
 
         if ($hayBenef) {
             $query->whereHas('usuariosAsignados', $benFilter);
         }
 
-        $query->with(['usuariosAsignados' => function ($q) use ($hayBenef, $benFilter) {
-            if ($hayBenef) {
-                $benFilter($q);
-            }
-            $q->with([
-                'usuario', 'rol', 'sede',
-                'estudianteEgresado.planEstudio.programaSede.programa.facultad',
-                'empleado.tipoEmpleado', 'empleado.dependencia', 'empleado.cargo',
-            ]);
-        }]);
+        $query->with([
+            'linea.componente.area', 'tipoActividad', 'sede', 'periodo',
+            'usuariosAsignados' => function ($q) use ($hayBenef, $benFilter) {
+                if ($hayBenef) $benFilter($q);
+                $q->with([
+                    'usuario', 'rol',
+                    'estudianteEgresado.planEstudio.programaSede.programa.facultad',
+                    'empleado.tipoEmpleado', 'empleado.dependencia', 'empleado.cargo',
+                ]);
+            },
+        ]);
 
         $servicios = $query->orderBy('id_periodo')->orderByDesc('fecha')->get();
 
-        $filename = 'reporte_servicios_' . now()->format('Y-m-d_H-i') . '.csv';
+        $export      = new \App\Exports\ServicioExport($servicios, $hojas);
+        $spreadsheet = $export->build();
+        $filename    = 'reporte_servicios_' . now()->format('Y-m-d_H-i') . '.xlsx';
 
-        return response()->streamDownload(function () use ($servicios) {
-            $out = fopen('php://output', 'w');
-            fputs($out, "\xEF\xBB\xBF");
-
-            fputcsv($out, [
-                'Servicio', 'Fecha', 'Período',
-                'Sede (Código)', 'Sede (Nombre)',
-                'Área', 'Componente', 'Línea', 'Tipo de Actividad',
-                'Documento', 'Nombre Completo', 'Correo',
-                'Rol', 'Estado', 'Sede Beneficiario',
-                'Facultad', 'Programa', 'Plan de Estudio', 'SNIES',
-                'Tipo Empleado', 'Dependencia', 'Cargo',
-            ]);
-
-            foreach ($servicios as $s) {
-                $baseRow = [
-                    $s->nombre,
-                    $s->fecha->format('d/m/Y'),
-                    $s->periodo?->nombre,
-                    $s->sede->codigo,
-                    $s->sede->nombre,
-                    $s->linea->componente->area->nombre,
-                    $s->linea->componente->nombre,
-                    $s->linea->nombre,
-                    $s->tipoActividad->nombre,
-                ];
-
-                if ($s->usuariosAsignados->isEmpty()) {
-                    fputcsv($out, array_merge($baseRow, array_fill(0, 13, '')));
-                    continue;
-                }
-
-                foreach ($s->usuariosAsignados as $urs) {
-                    $u      = $urs->usuario;
-                    $esEst  = in_array($urs->rol?->nombre, ['Estudiante', 'Graduado']);
-                    $esEmp  = $urs->rol?->nombre === 'Empleado';
-
-                    $facultad = $programa = $plan = $snies = '';
-                    if ($esEst && $urs->estudianteEgresado) {
-                        $pl       = $urs->estudianteEgresado->planEstudio;
-                        $ps       = $pl?->programaSede;
-                        $pr       = $ps?->programa;
-                        $facultad = $pr?->facultad?->nombre ?? '';
-                        $programa = $pr?->nombre ?? '';
-                        $plan     = $pl?->codigo_plan ?? '';
-                        $snies    = $ps?->codigo_snies ?? '';
-                    }
-
-                    $tipoEmp = $depEmp = $cargoEmp = '';
-                    if ($esEmp && $urs->empleado) {
-                        $tipoEmp  = $urs->empleado->tipoEmpleado?->nombre ?? '';
-                        $depEmp   = $urs->empleado->dependencia?->nombre ?? '';
-                        $cargoEmp = $urs->empleado->cargo?->nombre ?? '';
-                    }
-
-                    fputcsv($out, array_merge($baseRow, [
-                        $u?->documento,
-                        $u?->nombre_completo,
-                        $u?->correo,
-                        $urs->rol?->nombre,
-                        $urs->estado,
-                        $urs->sede?->nombre,
-                        $facultad, $programa, $plan, $snies,
-                        $tipoEmp, $depEmp, $cargoEmp,
-                    ]));
-                }
-            }
-
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }

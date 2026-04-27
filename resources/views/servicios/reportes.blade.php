@@ -333,6 +333,65 @@
         </div>
 
         {{-- ══════════════════════════════════════════════════════
+             PANEL C — Hojas a incluir
+        ══════════════════════════════════════════════════════ --}}
+        @php
+            $hojasInfo = [
+                'resumen'         => ['label' => 'Resumen',         'icon' => 'bi-bar-chart-fill',   'color' => '#196844'],
+                'por_servicios'   => ['label' => 'Por Servicios',   'icon' => 'bi-people-fill',      'color' => '#0d6efd'],
+                'estudiantes'     => ['label' => 'Estudiantes',     'icon' => 'bi-mortarboard-fill', 'color' => '#20c997'],
+                'graduados'       => ['label' => 'Graduados',       'icon' => 'bi-award-fill',       'color' => '#6f42c1'],
+                'administrativos' => ['label' => 'Administrativos', 'icon' => 'bi-person-workspace', 'color' => '#0d6efd'],
+                'contratistas'    => ['label' => 'Contratistas',    'icon' => 'bi-file-person-fill', 'color' => '#6f42c1'],
+                'docentes'        => ['label' => 'Docentes',        'icon' => 'bi-person-video3',    'color' => '#fd7e14'],
+            ];
+            $siempreDisponibles = ['resumen', 'por_servicios'];
+        @endphp
+
+        <div class="card mb-3 shadow-sm">
+            <div class="card-header filter-card-header d-flex justify-content-between align-items-center py-2"
+                 data-bs-toggle="collapse" data-bs-target="#panel-hojas">
+                <span class="fw-semibold" style="font-size:.95rem">
+                    <i class="bi bi-file-earmark-spreadsheet-fill me-2" style="color:#196844"></i>Hojas a incluir en el Excel
+                </span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <div class="collapse show" id="panel-hojas">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-end gap-2 mb-3">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-sel-todas">
+                            <i class="bi bi-check2-all me-1"></i>Seleccionar todas
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-desel-todas">
+                            <i class="bi bi-x-lg me-1"></i>Deseleccionar todas
+                        </button>
+                    </div>
+                    <div class="row g-2" id="hojas-container">
+                        @foreach($hojasInfo as $key => $info)
+                            @php $disponible = in_array($key, $hojasDisponibles); @endphp
+                            <div class="col-sm-6 col-md-4 hoja-row" data-hoja="{{ $key }}" {{ !$disponible ? 'style=display:none' : '' }}>
+                                <div class="form-check border rounded p-2 ps-4" style="background:#f8f9fa">
+                                    <input class="form-check-input check-hoja" type="checkbox"
+                                           name="hojas[]" value="{{ $key }}"
+                                           id="hoja-{{ $key }}"
+                                           {{ in_array($key, $hojasSeleccionadas) ? 'checked' : '' }}
+                                           {{ !$disponible ? 'disabled' : '' }}>
+                                    <label class="form-check-label d-flex align-items-center gap-2" for="hoja-{{ $key }}">
+                                        <i class="bi {{ $info['icon'] }}" style="color:{{ $info['color'] }}"></i>
+                                        <span class="fw-semibold" style="font-size:.85rem">{{ $info['label'] }}</span>
+                                        @if(in_array($key, $siempreDisponibles))
+                                            <span class="badge bg-secondary ms-auto" style="font-size:.6rem">siempre</span>
+                                        @endif
+                                    </label>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══════════════════════════════════════════════════════
              Vista previa + Botones
         ══════════════════════════════════════════════════════ --}}
         <div class="card shadow-sm mb-3">
@@ -366,7 +425,7 @@
                         <button type="submit"
                                 formaction="{{ route('servicios.reportes.descargar') }}"
                                 class="btn btn-sibi btn-sm {{ $totalServicios === 0 ? 'disabled' : '' }}">
-                            <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar CSV
+                            <i class="bi bi-file-earmark-excel-fill me-1"></i>Descargar Excel (.xlsx)
                         </button>
                     </div>
 
@@ -515,6 +574,48 @@
             });
     });
 
+    // ── Hojas disponibles (mirrors computeHojasDisponibles PHP logic) ──
+    const SIEMPRE = ['resumen', 'por_servicios'];
+
+    function computeHojasDisponibles() {
+        const roles = [...document.querySelectorAll('.check-role:checked')].map(e => e.value);
+        const tipos = [...document.querySelectorAll('.check-tipo-emp:checked')].map(e => e.value);
+        const allRoles = roles.length === 0;
+        const allTipos = tipos.length === 0;
+
+        const available = [...SIEMPRE];
+        if (allRoles || roles.includes('Estudiante'))  available.push('estudiantes');
+        if (allRoles || roles.includes('Graduado'))    available.push('graduados');
+        const hasEmp = allRoles || roles.includes('Empleado');
+        if (hasEmp) {
+            if (allTipos || tipos.includes('Administrativo')) available.push('administrativos');
+            if (allTipos || tipos.includes('Contratista'))    available.push('contratistas');
+            if (allTipos || tipos.includes('Docente'))        available.push('docentes');
+        }
+        return available;
+    }
+
+    function updateHojas() {
+        const available = computeHojasDisponibles();
+        document.querySelectorAll('.hoja-row').forEach(row => {
+            const hoja  = row.dataset.hoja;
+            const cb    = row.querySelector('.check-hoja');
+            const show  = available.includes(hoja);
+            row.style.display = show ? '' : 'none';
+            cb.disabled = !show;
+            if (!show) cb.checked = false;
+        });
+    }
+
+    document.getElementById('btn-sel-todas').addEventListener('click', () => {
+        document.querySelectorAll('.check-hoja:not(:disabled)').forEach(cb => cb.checked = true);
+    });
+    document.getElementById('btn-desel-todas').addEventListener('click', () => {
+        document.querySelectorAll('.check-hoja').forEach(cb => {
+            if (!SIEMPRE.includes(cb.value)) cb.checked = false;
+        });
+    });
+
     // ── Show / hide sub-panels por rol ──
     function updateRolePanels() {
         const checked = [...document.querySelectorAll('.check-role:checked')].map(el => el.value);
@@ -524,7 +625,10 @@
         document.getElementById('sub-estudiante').classList.toggle('d-none', !allUnchecked && !hasEst);
         document.getElementById('sub-empleado').classList.toggle('d-none', !allUnchecked && !hasEmp);
     }
-    document.querySelectorAll('.check-role').forEach(el => el.addEventListener('change', updateRolePanels));
+    document.querySelectorAll('.check-role').forEach(el => el.addEventListener('change', () => {
+        updateRolePanels();
+        updateHojas();
+    }));
 
     // ── Show / hide cargo según tipo empleado ──
     function updateCargo() {
@@ -533,7 +637,10 @@
         const needsCargo = allUnchecked || checked.some(t => ['Docente', 'Contratista'].includes(t));
         document.getElementById('sub-cargo').classList.toggle('d-none', !needsCargo);
     }
-    document.querySelectorAll('.check-tipo-emp').forEach(el => el.addEventListener('change', updateCargo));
+    document.querySelectorAll('.check-tipo-emp').forEach(el => el.addEventListener('change', () => {
+        updateCargo();
+        updateHojas();
+    }));
 
     // ── Init: si ya hay facultades seleccionadas, cargar programas via AJAX ──
     const facultadesPresel = @json(array_map('strval', $idFacultades));
