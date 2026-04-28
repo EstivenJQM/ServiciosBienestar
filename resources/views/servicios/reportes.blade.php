@@ -535,14 +535,14 @@
     }
 
     tsArea.on('change', function () {
-        const sel = Object.keys(tsArea.items).map(Number);
+        const sel = tsArea.getValue().map(Number);
         const filtered = sel.length ? allComponentes.filter(c => sel.includes(c.id_area)) : allComponentes;
         refreshOptions(tsComponente, filtered, 'id', 'nombre');
         triggerComponenteChange();
     });
 
     function triggerComponenteChange() {
-        const sel = Object.keys(tsComponente.items).map(Number);
+        const sel = tsComponente.getValue().map(Number);
         const filtered = sel.length ? allLineas.filter(l => sel.includes(l.id_componente)) : allLineas;
         refreshOptions(tsLinea, filtered, 'id', 'nombre');
     }
