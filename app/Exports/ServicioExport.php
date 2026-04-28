@@ -16,13 +16,17 @@ class ServicioExport
     ];
 
     private const TAB_COLORS = [
-        'resumen'         => 'FF196844',
-        'por_servicios'   => 'FF0D6EFD',
-        'estudiantes'     => 'FF20C997',
-        'graduados'       => 'FF6F42C1',
-        'administrativos' => 'FF0D6EFD',
-        'contratistas'    => 'FF6F42C1',
-        'docentes'        => 'FFFD7E14',
+        'resumen'         => 'FF2E7D32',
+        'estudiantes'     => 'FF2E7D32',
+        'graduados'       => 'FF66BB6A',
+        'por_servicios'   => 'FF1565C0',
+        'administrativos' => 'FF42A5F5',
+        'contratistas'    => 'FF90CAF9',
+        'docentes'        => 'FFEF6C00',
+        'planta'          => 'FFFF9800',
+        'ocasional'       => 'FFFFB74D',
+        'catedra'         => 'FFFFE0B2',
+        'familiares'      => 'FF7B1FA2',
     ];
 
     public function __construct(
