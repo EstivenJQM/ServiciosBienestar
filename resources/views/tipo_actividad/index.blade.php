@@ -2,7 +2,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">
-            <i class="bi bi-tags-fill me-2" style="color:#3DFF5E"></i>Tipos de Actividad
+            <i class="bi bi-tags-fill me-2" style="color:#65FE74"></i>Tipos de Actividad
         </h2>
         <a href="{{ route('tipo-actividad.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nuevo Tipo
@@ -46,14 +46,14 @@
                             data-bs-toggle="collapse"
                             data-bs-target="#{{ $tipoId }}"
                             aria-expanded="false">
-                        <span class="badge px-3 py-2 fs-6 flex-shrink-0" style="background-color:#3DFF5E;color:#000">
+                        <span class="badge px-3 py-2 fs-6 flex-shrink-0" style="background-color:#65FE74;color:#000">
                             <i class="bi bi-tag-fill me-1"></i>Tipo
                         </span>
                         <span class="text-dark fw-semibold d-flex align-items-center gap-1">
                             <i class="bi bi-chevron-right toggle-icon" style="font-size:.7rem;transition:transform .2s"></i>
                             {{ $tipo->nombre }}
                             @if($tipo->lineas->isNotEmpty())
-                                <span class="badge fw-normal ms-1" style="font-size:.65rem;background-color:#c8ffd4;color:#1a8a30">
+                                <span class="badge fw-normal ms-1" style="font-size:.65rem;background-color:#d4fdd8;color:#1a8a30">
                                     {{ $tipo->lineas->count() }}
                                 </span>
                             @endif
