@@ -514,6 +514,14 @@
     const lineaTipoMap      = @json($lineas->map(fn($l) => ['id' => $l->id_linea, 'tipos' => $l->tiposActividad->pluck('id_tipo_actividad')->values()]));
     const allTiposActividad = @json($tiposActividad->map(fn($t) => ['id' => $t->id_tipo_actividad, 'nombre' => $t->nombre]));
 
+    // ── Datos para cascades de beneficiarios ──
+    const allDependencias    = @json($dependencias->map(fn($d) => ['id' => $d->id_dependencia, 'nombre' => $d->nombre]));
+    const allCargos          = @json($cargos->map(fn($c) => ['id' => $c->id_cargo, 'nombre' => $c->nombre]));
+    const allFacultades      = @json($facultades->map(fn($f) => ['id' => $f->id_facultad, 'nombre' => $f->nombre]));
+    const tipoDependenciaMap = @json($tipoDependenciaMap);
+    const tipoCargoMap       = @json($tipoCargoMap);
+    const rolFacultadMap     = @json($rolFacultadMap);
+
     const tsServicio   = new TomSelect('#r-servicio',      tsOpts('Todos los servicios'));
     const tsArea       = new TomSelect('#r-area',          tsOpts('Todas'));
     const tsComponente = new TomSelect('#r-componente',    tsOpts('Todos'));
@@ -644,6 +652,39 @@
         });
     });
 
+    // ── Filtro de dependencias y cargos según tipo de empleado seleccionado ──
+    function updateEmpleadoFilters() {
+        const checked = [...document.querySelectorAll('.check-tipo-emp:checked')].map(el => el.value);
+        if (!checked.length) {
+            refreshOptions(tsDependencia, allDependencias, 'id', 'nombre');
+            refreshOptions(tsCargo, allCargos, 'id', 'nombre');
+            return;
+        }
+        const validDepIds  = new Set();
+        const validCargoIds = new Set();
+        checked.forEach(tipo => {
+            (tipoDependenciaMap[tipo] || []).forEach(id => validDepIds.add(id));
+            (tipoCargoMap[tipo]       || []).forEach(id => validCargoIds.add(id));
+        });
+        refreshOptions(tsDependencia, allDependencias.filter(d => validDepIds.has(d.id)),  'id', 'nombre');
+        refreshOptions(tsCargo,       allCargos.filter(c => validCargoIds.has(c.id)), 'id', 'nombre');
+    }
+
+    // ── Filtro de facultades según rol académico seleccionado ──
+    function updateAcademicFilters() {
+        const checked = [...document.querySelectorAll('.check-role:checked')].map(el => el.value);
+        const hasEst  = checked.includes('Estudiante');
+        const hasGrad = checked.includes('Graduado');
+        if (!hasEst && !hasGrad) {
+            refreshOptions(tsFacultad, allFacultades, 'id', 'nombre');
+            return;
+        }
+        const validFacIds = new Set();
+        if (hasEst)  (rolFacultadMap['Estudiante'] || []).forEach(id => validFacIds.add(id));
+        if (hasGrad) (rolFacultadMap['Graduado']   || []).forEach(id => validFacIds.add(id));
+        refreshOptions(tsFacultad, allFacultades.filter(f => validFacIds.has(f.id)), 'id', 'nombre');
+    }
+
     // ── Show / hide sub-panels por rol ──
     function updateRolePanels() {
         const checked = [...document.querySelectorAll('.check-role:checked')].map(el => el.value);
@@ -656,11 +697,13 @@
     document.querySelectorAll('.check-role').forEach(el => el.addEventListener('change', () => {
         updateRolePanels();
         updateHojas();
+        updateAcademicFilters();
     }));
 
-    // ── Tipo empleado → actualizar hojas disponibles ──
+    // ── Tipo empleado → hojas + dependencias/cargos ──
     document.querySelectorAll('.check-tipo-emp').forEach(el => el.addEventListener('change', () => {
         updateHojas();
+        updateEmpleadoFilters();
     }));
 
     // ── Init: si ya hay facultades seleccionadas, cargar programas via AJAX ──

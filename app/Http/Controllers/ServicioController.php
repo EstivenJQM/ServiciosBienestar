@@ -379,6 +379,36 @@ class ServicioController extends Controller
             ? PlanEstudio::whereHas('programaSede', fn($q) => $q->whereIn('id_programa', $b['idProgramas']))->get()
             : collect();
 
+        // Mapa tipo_empleado → dependencias/cargos que existen para ese tipo
+        $tipoDependenciaMap = DB::table('empleado')
+            ->join('tipo_empleado', 'empleado.id_tipo_empleado', '=', 'tipo_empleado.id_tipo_empleado')
+            ->whereNotNull('empleado.id_dependencia')
+            ->select('tipo_empleado.nombre as tipo', 'empleado.id_dependencia')
+            ->distinct()->get()
+            ->groupBy('tipo')
+            ->map(fn($rows) => $rows->pluck('id_dependencia')->values());
+
+        $tipoCargoMap = DB::table('empleado')
+            ->join('tipo_empleado', 'empleado.id_tipo_empleado', '=', 'tipo_empleado.id_tipo_empleado')
+            ->whereNotNull('empleado.id_cargo')
+            ->select('tipo_empleado.nombre as tipo', 'empleado.id_cargo')
+            ->distinct()->get()
+            ->groupBy('tipo')
+            ->map(fn($rows) => $rows->pluck('id_cargo')->values());
+
+        // Mapa rol (Estudiante/Graduado) → facultades que tienen registros para ese rol
+        $rolFacultadMap = DB::table('usuario_rol_sede')
+            ->join('rol', 'usuario_rol_sede.id_rol', '=', 'rol.id_rol')
+            ->join('estudiante_egresado', 'usuario_rol_sede.id_usuario_rol_sede', '=', 'estudiante_egresado.id_usuario_rol_sede')
+            ->join('plan_estudio', 'estudiante_egresado.id_plan_estudio', '=', 'plan_estudio.id_plan_estudio')
+            ->join('programa_sede', 'plan_estudio.id_programa_sede', '=', 'programa_sede.id_programa_sede')
+            ->join('programa', 'programa_sede.id_programa', '=', 'programa.id_programa')
+            ->whereIn('rol.nombre', ['Estudiante', 'Graduado'])
+            ->select('rol.nombre as rol', 'programa.id_facultad')
+            ->distinct()->get()
+            ->groupBy('rol')
+            ->map(fn($rows) => $rows->pluck('id_facultad')->values());
+
         $hayFiltros = $f['busqueda'] !== '' || collect($f)->except('busqueda')->flatten()->filter()->isNotEmpty()
                    || $this->hasBeneficiaryFilters($b);
 
@@ -396,7 +426,8 @@ class ServicioController extends Controller
             'facultades', 'tiposEmpleadoList', 'dependencias', 'cargos',
             'programasDisponibles', 'planesDisponibles',
             'hojasDisponibles', 'hojasSeleccionadas',
-            'nombresServiciosDisponibles'
+            'nombresServiciosDisponibles',
+            'tipoDependenciaMap', 'tipoCargoMap', 'rolFacultadMap'
         )));
     }
 
