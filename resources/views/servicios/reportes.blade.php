@@ -466,7 +466,16 @@
                             <span class="badge bg-secondary"><i class="bi bi-calendar-event me-1"></i>Hasta {{ \Carbon\Carbon::parse($fechaHasta)->format('d/m/Y') }}</span>
                         @endif
                         @foreach($roles as $r)
-                            <span class="badge" style="background-color:#196844"><i class="bi bi-person me-1"></i>{{ $r }}</span>
+                            @php
+                                $rBg = match($r) {
+                                    'Estudiante' => '#2E7D32',
+                                    'Graduado'   => '#66BB6A',
+                                    'Familiar'   => '#7B1FA2',
+                                    default      => '#1565C0',
+                                };
+                                $rFg = $r === 'Graduado' ? '#000' : '#fff';
+                            @endphp
+                            <span class="badge" style="background-color:{{ $rBg }};color:{{ $rFg }}"><i class="bi bi-person me-1"></i>{{ $r }}</span>
                         @endforeach
                         @foreach($programasDisponibles->whereIn('id_programa', $idProgramas) as $pr)
                             <span class="badge" style="background-color:#6f42c1"><i class="bi bi-journal-bookmark me-1"></i>{{ $pr->nombre }}</span>
@@ -475,7 +484,19 @@
                             <span class="badge" style="background-color:#6f42c1"><i class="bi bi-book me-1"></i>Plan {{ $pl->codigo_plan }}</span>
                         @endforeach
                         @foreach($tiposEmpleado as $te)
-                            <span class="badge" style="background-color:#856404"><i class="bi bi-briefcase me-1"></i>{{ $te }}</span>
+                            @php
+                                $teBg = match($te) {
+                                    'Administrativo' => '#42A5F5',
+                                    'Contratista'    => '#90CAF9',
+                                    'Docente'        => '#EF6C00',
+                                    'Planta'         => '#FF9800',
+                                    'Ocasional'      => '#FFB74D',
+                                    'Cátedra'        => '#FFE0B2',
+                                    default          => '#1565C0',
+                                };
+                                $teFg = in_array($te, ['Administrativo','Contratista','Planta','Ocasional','Cátedra']) ? '#000' : '#fff';
+                            @endphp
+                            <span class="badge" style="background-color:{{ $teBg }};color:{{ $teFg }}"><i class="bi bi-briefcase me-1"></i>{{ $te }}</span>
                         @endforeach
                         @foreach($dependencias->whereIn('id_dependencia', $idDependencias) as $dep)
                             <span class="badge" style="background-color:#FFFB75;color:#000"><i class="bi bi-diagram-3 me-1"></i>{{ $dep->nombre }}</span>

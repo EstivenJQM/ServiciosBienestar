@@ -174,14 +174,19 @@
                                 $esEmpleado = $urs->rol?->nombre === 'Empleado';
 
                                 $rolColor = match(true) {
-                                    $urs->rol?->nombre === 'Estudiante'              => '#196844',
-                                    $urs->rol?->nombre === 'Graduado'                => '#0d6efd',
-                                    $esEmpleado && $tipoEmp === 'Contratista'        => '#6f42c1',
-                                    $esEmpleado && $tipoEmp === 'Administrativo'     => '#0d6efd',
-                                    $esEmpleado && $tipoEmp === 'Docente'            => '#856404',
-                                    $esEmpleado                                      => '#856404',
+                                    $urs->rol?->nombre === 'Estudiante'              => '#2E7D32',
+                                    $urs->rol?->nombre === 'Graduado'                => '#66BB6A',
+                                    $urs->rol?->nombre === 'Familiar'                => '#7B1FA2',
+                                    $esEmpleado && $tipoEmp === 'Administrativo'     => '#42A5F5',
+                                    $esEmpleado && $tipoEmp === 'Contratista'        => '#90CAF9',
+                                    $esEmpleado && $tipoEmp === 'Docente'            => '#EF6C00',
+                                    $esEmpleado && $tipoEmp === 'Planta'             => '#FF9800',
+                                    $esEmpleado && $tipoEmp === 'Ocasional'          => '#FFB74D',
+                                    $esEmpleado && $tipoEmp === 'Cátedra'            => '#FFE0B2',
+                                    $esEmpleado                                      => '#1565C0',
                                     default                                          => '#6c757d',
                                 };
+                                $rolTextColor = in_array($rolColor, ['#66BB6A','#42A5F5','#90CAF9','#FF9800','#FFB74D','#FFE0B2']) ? '#000' : '#fff';
                                 $etiqueta = match(true) {
                                     $esEmpleado && $tipoEmp === 'Docente' => ($cargoNom ?? 'Docente'),
                                     $esEmpleado                           => ($tipoEmp ?? 'Empleado'),
@@ -196,7 +201,7 @@
                                     {{ $urs->usuario?->nombre_completo ?? '—' }}
                                 </td>
                                 <td>
-                                    <span class="badge" style="background-color:{{ $rolColor }};font-size:.68rem">
+                                    <span class="badge" style="background-color:{{ $rolColor }};color:{{ $rolTextColor }};font-size:.68rem">
                                         {{ $etiqueta }}
                                     </span>
                                 </td>

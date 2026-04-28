@@ -300,34 +300,43 @@
                                     $esEstudiante = in_array($entry->rol?->nombre, ['Estudiante', 'Graduado']);
                                     $tipoEmpNombre = $entry->empleado?->tipoEmpleado?->nombre;
                                     $rolColor = match($entry->rol?->nombre) {
-                                        'Estudiante' => '#196844',
-                                        'Graduado'   => '#0d6efd',
+                                        'Estudiante' => '#2E7D32',
+                                        'Graduado'   => '#66BB6A',
+                                        'Familiar'   => '#7B1FA2',
                                         'Empleado'   => match($tipoEmpNombre) {
-                                            'Contratista'    => '#6f42c1',
-                                            'Administrativo' => '#0d6efd',
-                                            'Docente'        => '#856404',
-                                            default          => '#856404',
+                                            'Administrativo' => '#42A5F5',
+                                            'Contratista'    => '#90CAF9',
+                                            'Docente'        => '#EF6C00',
+                                            'Planta'         => '#FF9800',
+                                            'Ocasional'      => '#FFB74D',
+                                            'Cátedra'        => '#FFE0B2',
+                                            default          => '#1565C0',
                                         },
                                         default => '#6c757d',
                                     };
                                     $rolBg = match($entry->rol?->nombre) {
-                                        'Estudiante' => '#e6f2ec',
-                                        'Graduado'   => '#e7f0ff',
+                                        'Estudiante' => '#e8f5e9',
+                                        'Graduado'   => '#f1f8f1',
+                                        'Familiar'   => '#f3e5f5',
                                         'Empleado'   => match($tipoEmpNombre) {
-                                            'Contratista'    => '#f3eeff',
-                                            'Administrativo' => '#e7f0ff',
-                                            'Docente'        => '#fff8e1',
-                                            default          => '#fff8e1',
+                                            'Administrativo' => '#e3f2fd',
+                                            'Contratista'    => '#e8f4fd',
+                                            'Docente'        => '#fff3e0',
+                                            'Planta'         => '#fff3e0',
+                                            'Ocasional'      => '#fff8ee',
+                                            'Cátedra'        => '#fffaf5',
+                                            default          => '#e3f2fd',
                                         },
                                         default => '#f3f4f6',
                                     };
+                                    $rolTextColor = in_array($rolColor, ['#66BB6A','#42A5F5','#90CAF9','#FF9800','#FFB74D','#FFE0B2']) ? '#000' : '#fff';
                                     $bs = 'd-inline-flex align-items-center px-2 py-0 gap-1';
                                     $bh = 'height:1.6rem;font-size:.7rem';
                                 @endphp
                                 <div class="d-flex align-items-center flex-wrap gap-1"
                                      style="padding:4px 6px; background:{{ $rolBg }}; border-radius:.375rem; border-left: 3px solid {{ $rolColor }}">
 
-                                    <span class="badge {{ $bs }}" style="{{ $bh }};background-color:{{ $rolColor }}">
+                                    <span class="badge {{ $bs }}" style="{{ $bh }};background-color:{{ $rolColor }};color:{{ $rolTextColor }}">
                                         {{ $entry->rol?->nombre ?? '—' }}
                                     </span>
 
@@ -381,7 +390,19 @@
                                         @endphp
                                         <span class="vr mx-1 align-self-center"></span>
                                         @if($tipoEmp)
-                                            <span class="badge {{ $bs }}" style="{{ $bh }};background-color:#fd7e14">
+                                            @php
+                                                $teColor = match($tipoEmp->nombre) {
+                                                    'Administrativo' => '#42A5F5',
+                                                    'Contratista'    => '#90CAF9',
+                                                    'Docente'        => '#EF6C00',
+                                                    'Planta'         => '#FF9800',
+                                                    'Ocasional'      => '#FFB74D',
+                                                    'Cátedra'        => '#FFE0B2',
+                                                    default          => '#1565C0',
+                                                };
+                                                $teText = in_array($tipoEmp->nombre, ['Administrativo','Contratista','Planta','Ocasional','Cátedra']) ? '#000' : '#fff';
+                                            @endphp
+                                            <span class="badge {{ $bs }}" style="{{ $bh }};background-color:{{ $teColor }};color:{{ $teText }}">
                                                 <i class="bi bi-briefcase"></i>{{ $tipoEmp->nombre }}
                                             </span>
                                         @endif

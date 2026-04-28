@@ -188,8 +188,8 @@
 
     const PALETTE = [GREEN, TEAL, PURPLE, ORANGE, BLUE, RED, '#ffc107', '#0dcaf0'];
 
-    const ROL_COLORS = { 'Estudiante': TEAL, 'Graduado': PURPLE, 'Empleado': ORANGE };
-    const TIPO_EMP_COLORS = { 'Docente': ORANGE, 'Administrativo': BLUE, 'Contratista': PURPLE };
+    const ROL_COLORS = { 'Estudiante': '#2E7D32', 'Graduado': '#66BB6A', 'Empleado': '#1565C0', 'Familiar': '#7B1FA2' };
+    const TIPO_EMP_COLORS = { 'Docente': '#EF6C00', 'Administrativo': '#42A5F5', 'Contratista': '#90CAF9', 'Planta': '#FF9800', 'Ocasional': '#FFB74D', 'Cátedra': '#FFE0B2' };
 
     const baseFont = { family: 'system-ui, sans-serif', size: 12 };
 

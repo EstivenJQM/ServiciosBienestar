@@ -109,9 +109,16 @@
                             @endphp
                             @php
                                 $rolBadge = match($inc->nombre_rol ?? 'Estudiante') {
-                                    'Graduado' => ['bg-success', 'bi-mortarboard-fill'],
-                                    'Docente'  => ['bg-info text-dark', 'bi-person-badge-fill'],
-                                    default    => ['bg-primary', 'bi-person-fill'],
+                                    'Graduado'       => ['#66BB6A', '#000', 'bi-mortarboard-fill'],
+                                    'Familiar'       => ['#7B1FA2', '#fff', 'bi-house-heart-fill'],
+                                    'Empleado'       => ['#1565C0', '#fff', 'bi-person-badge-fill'],
+                                    'Docente'        => ['#EF6C00', '#fff', 'bi-person-badge-fill'],
+                                    'Administrativo' => ['#42A5F5', '#000', 'bi-person-badge-fill'],
+                                    'Contratista'    => ['#90CAF9', '#000', 'bi-person-badge-fill'],
+                                    'Planta'         => ['#FF9800', '#000', 'bi-person-badge-fill'],
+                                    'Ocasional'      => ['#FFB74D', '#000', 'bi-person-badge-fill'],
+                                    'Cátedra'        => ['#FFE0B2', '#000', 'bi-person-badge-fill'],
+                                    default          => ['#2E7D32', '#fff', 'bi-person-fill'],
                                 };
                             @endphp
                             <tr>
@@ -130,8 +137,8 @@
                                     @endif
                                 </td>
                                 <td class="small">
-                                    <span class="badge {{ $rolBadge[0] }}" style="font-size:.65rem">
-                                        <i class="bi {{ $rolBadge[1] }} me-1"></i>{{ $inc->nombre_rol ?? 'Estudiante' }}
+                                    <span class="badge" style="background-color:{{ $rolBadge[0] }};color:{{ $rolBadge[1] }};font-size:.65rem">
+                                        <i class="bi {{ $rolBadge[2] }} me-1"></i>{{ $inc->nombre_rol ?? 'Estudiante' }}
                                     </span>
                                 </td>
                                 <td class="small fw-semibold">{{ $inc->documento ?: '—' }}</td>
