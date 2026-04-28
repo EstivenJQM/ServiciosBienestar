@@ -508,9 +508,11 @@
         },
     });
 
-    // ── Área → Componente → Línea (client-side cascade) ──
-    const allComponentes = @json($componentes->map(fn($c) => ['id' => $c->id_componente, 'nombre' => $c->nombre, 'id_area' => $c->id_area]));
-    const allLineas      = @json($lineas->map(fn($l) => ['id' => $l->id_linea, 'nombre' => $l->nombre, 'id_componente' => $l->id_componente]));
+    // ── Área → Componente → Línea → Tipo Actividad (client-side cascade) ──
+    const allComponentes    = @json($componentes->map(fn($c) => ['id' => $c->id_componente, 'nombre' => $c->nombre, 'id_area' => $c->id_area]));
+    const allLineas         = @json($lineas->map(fn($l) => ['id' => $l->id_linea, 'nombre' => $l->nombre, 'id_componente' => $l->id_componente]));
+    const lineaTipoMap      = @json($lineas->map(fn($l) => ['id' => $l->id_linea, 'tipos' => $l->tiposActividad->pluck('id_tipo_actividad')->values()]));
+    const allTiposActividad = @json($tiposActividad->map(fn($t) => ['id' => $t->id_tipo_actividad, 'nombre' => $t->nombre]));
 
     const tsServicio   = new TomSelect('#r-servicio',      tsOpts('Todos los servicios'));
     const tsArea       = new TomSelect('#r-area',          tsOpts('Todas'));
@@ -545,8 +547,21 @@
         const sel = tsComponente.getValue().map(Number);
         const filtered = sel.length ? allLineas.filter(l => sel.includes(l.id_componente)) : allLineas;
         refreshOptions(tsLinea, filtered, 'id', 'nombre');
+        triggerLineaChange();
     }
     tsComponente.on('change', triggerComponenteChange);
+
+    function triggerLineaChange() {
+        const sel = tsLinea.getValue().map(Number);
+        if (!sel.length) {
+            refreshOptions(tsTipoAct, allTiposActividad, 'id', 'nombre');
+            return;
+        }
+        const validIds = new Set();
+        lineaTipoMap.filter(l => sel.includes(l.id)).forEach(l => l.tipos.forEach(id => validIds.add(id)));
+        refreshOptions(tsTipoAct, allTiposActividad.filter(t => validIds.has(t.id)), 'id', 'nombre');
+    }
+    tsLinea.on('change', triggerLineaChange);
 
     // ── Facultad → Programa (AJAX) ──
     const urlProgramas = '{{ route('servicios.reportes.programas') }}';

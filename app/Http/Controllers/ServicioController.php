@@ -156,7 +156,7 @@ class ServicioController extends Controller
             'sedes'          => Sede::orderBy('nombre')->get(),
             'areas'          => Area::orderBy('nombre')->get(),
             'componentes'    => Componente::orderBy('nombre')->get(),
-            'lineas'         => Linea::orderBy('nombre')->get(),
+            'lineas'         => Linea::with('tiposActividad')->orderBy('nombre')->get(),
             'tiposActividad' => TipoActividad::orderBy('nombre')->get(),
         ];
     }
