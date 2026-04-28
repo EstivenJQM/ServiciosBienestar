@@ -34,7 +34,7 @@
                 + (int)(!empty($idLineas)) + (int)(!empty($idTiposActividad))
                 + (int)($fechaDesde !== null && $fechaDesde !== '')
                 + (int)($fechaHasta !== null && $fechaHasta !== '')
-                + (int)($busqueda !== '');
+                + (int)(!empty($nombresServicios));
         @endphp
 
         <div class="card mb-3 shadow-sm">
@@ -54,15 +54,18 @@
                 <div class="card-body py-3">
                     <div class="row g-3">
 
-                        {{-- Búsqueda --}}
+                        {{-- Búsqueda por nombre --}}
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
                                 <i class="bi bi-search me-1"></i>Nombre del servicio
                             </label>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                                <input type="text" name="q" value="{{ $busqueda }}" class="form-control" placeholder="Buscar por nombre…">
-                            </div>
+                            <select name="nombre_servicio[]" multiple id="r-servicio" data-placeholder="Todos los servicios">
+                                @foreach($nombresServiciosDisponibles as $nombre)
+                                    <option value="{{ $nombre }}" {{ in_array($nombre, $nombresServicios) ? 'selected' : '' }}>
+                                        {{ $nombre }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         {{-- Período --}}
@@ -159,13 +162,13 @@
                                 <i class="bi bi-calendar-range me-1"></i>Rango de fechas
                             </p>
                         </div>
-                        <div class="col-sm-6 col-md-3">
+                        <div class="col-sm-6 col-md-4">
                             <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">Desde</label>
-                            <input type="date" name="fecha_desde" value="{{ $fechaDesde }}" class="form-control form-control-sm">
+                            <input type="date" name="fecha_desde" value="{{ $fechaDesde }}" class="form-control">
                         </div>
-                        <div class="col-sm-6 col-md-3">
+                        <div class="col-sm-6 col-md-4">
                             <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">Hasta</label>
-                            <input type="date" name="fecha_hasta" value="{{ $fechaHasta }}" class="form-control form-control-sm">
+                            <input type="date" name="fecha_hasta" value="{{ $fechaHasta }}" class="form-control">
                         </div>
 
                     </div>
@@ -313,7 +316,7 @@
                                 </div>
 
                                 {{-- Cargo --}}
-                                <div id="sub-cargo" class="col-sm-6 col-md-6 {{ collect($tiposEmpleado)->intersect(['Docente','Contratista'])->isNotEmpty() || empty($tiposEmpleado) ? '' : 'd-none' }}">
+                                <div id="sub-cargo" class="col-sm-6 col-md-6">
                                     <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
                                         <i class="bi bi-person-badge me-1"></i>Cargo
                                     </label>
@@ -435,9 +438,9 @@
                 @if($hayFiltros)
                     {{-- Badges resumen de filtros activos --}}
                     <div class="d-flex flex-wrap gap-1 mt-3 pt-2 border-top">
-                        @if($busqueda !== '')
-                            <span class="badge bg-secondary"><i class="bi bi-search me-1"></i>«{{ $busqueda }}»</span>
-                        @endif
+                        @foreach($nombresServicios as $ns)
+                            <span class="badge bg-secondary"><i class="bi bi-search me-1"></i>{{ $ns }}</span>
+                        @endforeach
                         @foreach($periodos->whereIn('id_periodo', $idPeriodos) as $p)
                             <span class="badge bg-secondary"><i class="bi bi-calendar3 me-1"></i>{{ $p->nombre }}</span>
                         @endforeach
@@ -495,12 +498,21 @@
         plugins: ['remove_button'],
         maxOptions: null,
         placeholder,
+        onItemAdd() {
+            this.control_input.setAttribute('placeholder', '');
+        },
+        onItemRemove() {
+            if (!this.items.length) {
+                this.control_input.setAttribute('placeholder', placeholder);
+            }
+        },
     });
 
     // ── Área → Componente → Línea (client-side cascade) ──
     const allComponentes = @json($componentes->map(fn($c) => ['id' => $c->id_componente, 'nombre' => $c->nombre, 'id_area' => $c->id_area]));
     const allLineas      = @json($lineas->map(fn($l) => ['id' => $l->id_linea, 'nombre' => $l->nombre, 'id_componente' => $l->id_componente]));
 
+    const tsServicio   = new TomSelect('#r-servicio',      tsOpts('Todos los servicios'));
     const tsArea       = new TomSelect('#r-area',          tsOpts('Todas'));
     const tsComponente = new TomSelect('#r-componente',    tsOpts('Todos'));
     const tsLinea      = new TomSelect('#r-linea',         tsOpts('Todas'));
@@ -631,15 +643,8 @@
         updateHojas();
     }));
 
-    // ── Show / hide cargo según tipo empleado ──
-    function updateCargo() {
-        const checked = [...document.querySelectorAll('.check-tipo-emp:checked')].map(el => el.value);
-        const allUnchecked = checked.length === 0;
-        const needsCargo = allUnchecked || checked.some(t => ['Docente', 'Contratista'].includes(t));
-        document.getElementById('sub-cargo').classList.toggle('d-none', !needsCargo);
-    }
+    // ── Tipo empleado → actualizar hojas disponibles ──
     document.querySelectorAll('.check-tipo-emp').forEach(el => el.addEventListener('change', () => {
-        updateCargo();
         updateHojas();
     }));
 

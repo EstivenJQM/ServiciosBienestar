@@ -36,6 +36,7 @@ class ServicioController extends Controller
         if ($f['busqueda'] !== '') {
             $query->where('nombre', 'like', "%{$f['busqueda']}%");
         }
+        if (!empty($f['nombresServicios'])) $query->whereIn('nombre', $f['nombresServicios']);
         if (!empty($f['idPeriodos']))       $query->whereIn('id_periodo', $f['idPeriodos']);
         if (!empty($f['idSedes']))          $query->whereIn('id_sede', $f['idSedes']);
         if (!empty($f['idAreas']))          $query->whereHas('linea.componente', fn($q) => $q->whereIn('id_area', $f['idAreas']));
@@ -93,8 +94,9 @@ class ServicioController extends Controller
     private function parseServiceFilters(Request $request): array
     {
         return [
-            'busqueda'        => trim($request->input('q', '')),
-            'idPeriodos'      => $this->parseArrayInput($request, 'id_periodo'),
+            'busqueda'         => trim($request->input('q', '')),
+            'nombresServicios' => array_values(array_filter($request->input('nombre_servicio', []))),
+            'idPeriodos'       => $this->parseArrayInput($request, 'id_periodo'),
             'idSedes'         => $this->parseArrayInput($request, 'id_sede'),
             'idAreas'         => $this->parseArrayInput($request, 'id_area'),
             'idComponentes'   => $this->parseArrayInput($request, 'id_componente'),
@@ -362,6 +364,8 @@ class ServicioController extends Controller
 
         $dd = $this->dropdownData();
 
+        $nombresServiciosDisponibles = Servicio::select('nombre')->distinct()->orderBy('nombre')->pluck('nombre');
+
         $facultades         = Facultad::orderBy('nombre')->get();
         $tiposEmpleadoList  = TipoEmpleado::orderBy('nombre')->get();
         $dependencias       = Dependencia::orderBy('nombre')->get();
@@ -391,7 +395,8 @@ class ServicioController extends Controller
             'totalServicios', 'totalAsignaciones', 'hayFiltros',
             'facultades', 'tiposEmpleadoList', 'dependencias', 'cargos',
             'programasDisponibles', 'planesDisponibles',
-            'hojasDisponibles', 'hojasSeleccionadas'
+            'hojasDisponibles', 'hojasSeleccionadas',
+            'nombresServiciosDisponibles'
         )));
     }
 
