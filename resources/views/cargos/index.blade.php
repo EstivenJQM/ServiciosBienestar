@@ -2,7 +2,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">
-            <i class="bi bi-person-badge-fill me-2" style="color:#6f42c1"></i>Cargos
+            <i class="bi bi-person-badge-fill me-2" style="color:#D2C947"></i>Cargos
         </h2>
         <a href="{{ route('cargos.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nuevo Cargo
@@ -31,10 +31,10 @@
     </form>
 
     @forelse($cargos as $cargo)
-        <div class="tree-area rounded p-3 mb-2 bg-white shadow-sm" style="border-left-color:#6f42c1">
+        <div class="tree-area rounded p-3 mb-2 bg-white shadow-sm" style="border-left-color:#D2C947">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge rounded-pill px-2" style="background-color:#6f42c1">Cargo</span>
+                    <span class="badge rounded-pill px-2" style="background-color:#D2C947;color:#000">Cargo</span>
                     <span class="badge bg-secondary">{{ $cargo->codigo }}</span>
                     <span class="fw-semibold">{{ $cargo->nombre }}</span>
                 </div>

@@ -478,10 +478,10 @@
                             <span class="badge" style="background-color:#856404"><i class="bi bi-briefcase me-1"></i>{{ $te }}</span>
                         @endforeach
                         @foreach($dependencias->whereIn('id_dependencia', $idDependencias) as $dep)
-                            <span class="badge" style="background-color:#856404"><i class="bi bi-diagram-3 me-1"></i>{{ $dep->nombre }}</span>
+                            <span class="badge" style="background-color:#FFFB75;color:#000"><i class="bi bi-diagram-3 me-1"></i>{{ $dep->nombre }}</span>
                         @endforeach
                         @foreach($cargos->whereIn('id_cargo', $idCargos) as $car)
-                            <span class="badge" style="background-color:#856404"><i class="bi bi-person-badge me-1"></i>{{ $car->nombre }}</span>
+                            <span class="badge" style="background-color:#D2C947;color:#000"><i class="bi bi-person-badge me-1"></i>{{ $car->nombre }}</span>
                         @endforeach
                     </div>
                 @endif

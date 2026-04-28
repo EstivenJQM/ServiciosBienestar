@@ -16,7 +16,7 @@
                 <span class="badge" style="background-color:#20c997">
                     {{ $servicio->linea->nombre }}
                 </span>
-                <span class="badge" style="background-color:#6f42c1">
+                <span class="badge" style="background-color:#3DFF5E;color:#000">
                     {{ $servicio->tipoActividad->nombre }}
                 </span>
                 <span class="badge bg-light text-dark border">

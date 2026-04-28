@@ -259,7 +259,7 @@
                                 <td class="text-center">
                                     <div class="d-flex flex-wrap gap-1 align-items-center justify-content-center">
                                         <span class="badge" style="background-color:#20c997;font-size:.68rem">{{ $servicio->linea->nombre }}</span>
-                                        <span class="badge" style="background-color:#fd7e14;font-size:.68rem">{{ $servicio->tipoActividad->nombre }}</span>
+                                        <span class="badge" style="background-color:#3DFF5E;color:#000;font-size:.68rem">{{ $servicio->tipoActividad->nombre }}</span>
                                     </div>
                                     <small class="text-muted" style="font-size:.7rem">
                                         {{ $servicio->linea->componente->area->nombre }}

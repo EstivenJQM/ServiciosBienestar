@@ -2,7 +2,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">
-            <i class="bi bi-diagram-3-fill me-2" style="color:#fd7e14"></i>Dependencias
+            <i class="bi bi-diagram-3-fill me-2" style="color:#FFFB75"></i>Dependencias
         </h2>
         <a href="{{ route('dependencias.create') }}" class="btn btn-sibi">
             <i class="bi bi-plus-lg me-1"></i> Nueva Dependencia
@@ -31,10 +31,10 @@
     </form>
 
     @forelse($dependencias as $dependencia)
-        <div class="tree-area rounded p-3 mb-2 bg-white shadow-sm" style="border-left-color:#fd7e14">
+        <div class="tree-area rounded p-3 mb-2 bg-white shadow-sm" style="border-left-color:#FFFB75">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge rounded-pill px-2" style="background-color:#fd7e14">Dependencia</span>
+                    <span class="badge rounded-pill px-2" style="background-color:#FFFB75;color:#000">Dependencia</span>
                     <span class="fw-semibold">{{ $dependencia->nombre }}</span>
                 </div>
                 <div class="d-flex gap-1">

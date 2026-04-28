@@ -184,6 +184,7 @@
     const ORANGE  = '#fd7e14';
     const BLUE    = '#0d6efd';
     const RED     = '#dc3545';
+    const DEPS    = '#FFFB75';
 
     const PALETTE = [GREEN, TEAL, PURPLE, ORANGE, BLUE, RED, '#ffc107', '#0dcaf0'];
 
@@ -409,7 +410,7 @@
                 datasets: [{
                     label: 'Personas',
                     data: topDeps.map(r => r.total),
-                    backgroundColor: ORANGE + 'cc',
+                    backgroundColor: DEPS + 'cc',
                     borderRadius: 4,
                 }],
             },

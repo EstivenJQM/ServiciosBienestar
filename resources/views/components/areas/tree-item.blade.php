@@ -90,8 +90,8 @@
                             <div class="collapse mt-1 ms-3" id="{{ $lineaId }}">
                                 @forelse($linea->tiposActividad as $tipo)
                                     <div class="d-flex align-items-center gap-2 py-1 px-2 rounded mb-1"
-                                         style="background-color:#fff8e1">
-                                        <i class="bi bi-tag-fill" style="color:#fd7e14;font-size:.75rem"></i>
+                                         style="background-color:#e8fff0">
+                                        <i class="bi bi-tag-fill" style="color:#3DFF5E;font-size:.75rem"></i>
                                         <span class="small">{{ $tipo->nombre }}</span>
                                     </div>
                                 @empty
