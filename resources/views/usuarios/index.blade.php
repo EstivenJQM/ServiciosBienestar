@@ -366,7 +366,7 @@
                                         @endphp
                                         <span class="vr mx-1 align-self-center"></span>
                                         @if($plan)
-                                            <span class="badge bg-info text-dark {{ $bs }}" style="{{ $bh }}">
+                                            <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
                                                 <i class="bi bi-book"></i>Plan {{ $plan->codigo_plan }}
                                             </span>
                                         @endif
@@ -376,8 +376,8 @@
                                             </span>
                                         @endif
                                         @if($facultad)
-                                            <span class="badge {{ $bs }}" style="{{ $bh }};background-color:#6f42c1">
-                                                <i class="bi bi-building"></i>{{ $facultad->nombre }}
+                                            <span class="badge bg-white text-dark border {{ $bs }}" style="{{ $bh }}">
+                                                <i class="bi bi-building" ></i>{{ $facultad->nombre }}
                                             </span>
                                         @endif
                                     @endif
