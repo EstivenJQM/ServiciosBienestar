@@ -16,10 +16,10 @@ class ServicioExport
     ];
 
     private const TAB_COLORS = [
-        'resumen'         => 'FF2E7D32',
+        'resumen'         => 'FF196844',
         'estudiantes'     => 'FF2E7D32',
         'graduados'       => 'FF66BB6A',
-        'por_servicios'   => 'FF1565C0',
+        'por_servicios'   => 'FF196844',
         'administrativos' => 'FF42A5F5',
         'contratistas'    => 'FF90CAF9',
         'docentes'        => 'FFEF6C00',

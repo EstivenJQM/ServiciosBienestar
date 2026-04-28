@@ -342,12 +342,12 @@
         @php
             $hojasInfo = [
                 'resumen'         => ['label' => 'Resumen',         'icon' => 'bi-bar-chart-fill',      'color' => '#196844'],
-                'por_servicios'   => ['label' => 'Por Servicios',   'icon' => 'bi-people-fill',         'color' => '#0d6efd'],
-                'estudiantes'     => ['label' => 'Estudiantes',     'icon' => 'bi-person-fill',         'color' => '#20c997'],
-                'graduados'       => ['label' => 'Graduados',       'icon' => 'bi-mortarboard-fill',    'color' => '#6f42c1'],
-                'administrativos' => ['label' => 'Administrativos', 'icon' => 'bi-person-gear',         'color' => '#0d6efd'],
-                'contratistas'    => ['label' => 'Contratistas',    'icon' => 'bi-file-earmark-person', 'color' => '#6f42c1'],
-                'docentes'        => ['label' => 'Docentes',        'icon' => 'bi-person-badge-fill',   'color' => '#fd7e14'],
+                'por_servicios'   => ['label' => 'Por Servicios',   'icon' => 'bi-people-fill',         'color' => '#196844'],
+                'estudiantes'     => ['label' => 'Estudiantes',     'icon' => 'bi-person-fill',         'color' => '#2E7D32'],
+                'graduados'       => ['label' => 'Graduados',       'icon' => 'bi-mortarboard-fill',    'color' => '#66BB6A'],
+                'administrativos' => ['label' => 'Administrativos', 'icon' => 'bi-person-gear',         'color' => '#42A5F5'],
+                'contratistas'    => ['label' => 'Contratistas',    'icon' => 'bi-file-earmark-person', 'color' => '#90CAF9'],
+                'docentes'        => ['label' => 'Docentes',        'icon' => 'bi-person-badge-fill',   'color' => '#EF6C00'],
             ];
             $siempreDisponibles = ['resumen', 'por_servicios'];
         @endphp
