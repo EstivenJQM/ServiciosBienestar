@@ -50,12 +50,17 @@ class ServicioController extends Controller
     private function buildBeneficiaryFilter(array $b): \Closure
     {
         return function ($q) use ($b) {
-            ['roles' => $roles, 'idFacultades' => $idFacultades, 'idProgramas' => $idProgramas,
+            ['roles' => $roles, 'idSedesBenef' => $idSedesBenef,
+             'idFacultades' => $idFacultades, 'idProgramas' => $idProgramas,
              'idPlanes' => $idPlanes, 'tiposEmpleado' => $tiposEmpleado,
              'idDependencias' => $idDependencias, 'idCargos' => $idCargos] = $b;
 
             if (!empty($roles)) {
                 $q->whereHas('rol', fn($r) => $r->whereIn('nombre', $roles));
+            }
+
+            if (!empty($idSedesBenef)) {
+                $q->whereIn('id_sede', $idSedesBenef);
             }
 
             $hasStudent  = !empty($idFacultades) || !empty($idProgramas) || !empty($idPlanes);
@@ -111,6 +116,7 @@ class ServicioController extends Controller
     {
         return [
             'roles'          => array_values(array_filter($request->input('roles', []))),
+            'idSedesBenef'   => $this->parseArrayInput($request, 'id_sede_benef'),
             'idFacultades'   => $this->parseArrayInput($request, 'id_facultad'),
             'idProgramas'    => $this->parseArrayInput($request, 'id_programa'),
             'idPlanes'       => $this->parseArrayInput($request, 'id_plan_estudio'),
@@ -122,9 +128,9 @@ class ServicioController extends Controller
 
     private function hasBeneficiaryFilters(array $b): bool
     {
-        return !empty($b['roles']) || !empty($b['idFacultades']) || !empty($b['idProgramas'])
-            || !empty($b['idPlanes']) || !empty($b['tiposEmpleado']) || !empty($b['idDependencias'])
-            || !empty($b['idCargos']);
+        return !empty($b['roles']) || !empty($b['idSedesBenef']) || !empty($b['idFacultades'])
+            || !empty($b['idProgramas']) || !empty($b['idPlanes']) || !empty($b['tiposEmpleado'])
+            || !empty($b['idDependencias']) || !empty($b['idCargos']);
     }
 
     private function computeHojasDisponibles(array $b): array
@@ -145,6 +151,8 @@ class ServicioController extends Controller
             if ($allTipos || in_array('Contratista',    $tipos)) $hojas[] = 'contratistas';
             if ($allTipos || in_array('Docente',        $tipos)) $hojas[] = 'docentes';
         }
+
+        if ($allRoles || in_array('Familiar', $roles)) $hojas[] = 'familiares';
 
         return $hojas;
     }

@@ -180,10 +180,10 @@
              PANEL B — Filtros de Beneficiarios
         ══════════════════════════════════════════════════════ --}}
         @php
-            $nFiltrosBenef = (int)(!empty($roles)) + (int)(!empty($idFacultades))
-                + (int)(!empty($idProgramas)) + (int)(!empty($idPlanes))
-                + (int)(!empty($tiposEmpleado)) + (int)(!empty($idDependencias))
-                + (int)(!empty($idCargos));
+            $nFiltrosBenef = (int)(!empty($roles)) + (int)(!empty($idSedesBenef))
+                + (int)(!empty($idFacultades)) + (int)(!empty($idProgramas))
+                + (int)(!empty($idPlanes)) + (int)(!empty($tiposEmpleado))
+                + (int)(!empty($idDependencias)) + (int)(!empty($idCargos));
 
             $rolActivos = array_flip($roles);
             $tieneEstudiante = isset($rolActivos['Estudiante']) || isset($rolActivos['Graduado']);
@@ -213,7 +213,7 @@
                         <span class="fw-normal text-muted ms-1">(vacío = todos)</span>
                     </p>
                     <div class="d-flex flex-wrap gap-3 mb-3">
-                        @foreach(['Estudiante','Graduado','Empleado'] as $rol)
+                        @foreach(['Estudiante','Graduado','Empleado','Familiar'] as $rol)
                             <div class="form-check">
                                 <input class="form-check-input check-role" type="checkbox"
                                        name="roles[]" value="{{ $rol }}"
@@ -222,6 +222,21 @@
                                 <label class="form-check-label" for="rol-{{ $rol }}">{{ $rol }}</label>
                             </div>
                         @endforeach
+                    </div>
+
+                    {{-- ── Sede del beneficiario ── --}}
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted text-uppercase" style="font-size:.68rem">
+                            <i class="bi bi-geo-alt-fill me-1"></i>Sede del beneficiario
+                            <span class="fw-normal text-muted ms-1">(vacío = todas)</span>
+                        </label>
+                        <select name="id_sede_benef[]" multiple id="r-sede-benef" data-placeholder="Todas">
+                            @foreach($sedes as $sede)
+                                <option value="{{ $sede->id_sede }}" {{ in_array($sede->id_sede, $idSedesBenef) ? 'selected' : '' }}>
+                                    [{{ $sede->codigo }}] {{ $sede->nombre }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
                     {{-- ── Sub-panel Estudiante / Graduado ── --}}
@@ -348,6 +363,7 @@
                 'administrativos' => ['label' => 'Administrativos', 'icon' => 'bi-person-gear',         'color' => '#42A5F5'],
                 'contratistas'    => ['label' => 'Contratistas',    'icon' => 'bi-file-earmark-person', 'color' => '#90CAF9'],
                 'docentes'        => ['label' => 'Docentes',        'icon' => 'bi-person-badge-fill',   'color' => '#EF6C00'],
+                'familiares'      => ['label' => 'Familiares',      'icon' => 'bi-heart-fill',          'color' => '#7B1FA2'],
             ];
             $siempreDisponibles = ['resumen', 'por_servicios'];
         @endphp
@@ -465,6 +481,9 @@
                         @if($fechaHasta)
                             <span class="badge bg-secondary"><i class="bi bi-calendar-event me-1"></i>Hasta {{ \Carbon\Carbon::parse($fechaHasta)->format('d/m/Y') }}</span>
                         @endif
+                        @foreach($sedes->whereIn('id_sede', $idSedesBenef) as $sb)
+                            <span class="badge bg-secondary"><i class="bi bi-geo-alt-fill me-1"></i>Benef. {{ $sb->nombre }}</span>
+                        @endforeach
                         @foreach($roles as $r)
                             @php
                                 $rBg = match($r) {
@@ -549,6 +568,7 @@
     const tsLinea      = new TomSelect('#r-linea',         tsOpts('Todas'));
     const tsPeriodo    = new TomSelect('#r-periodo',       tsOpts('Todos'));
     const tsSede       = new TomSelect('#r-sede',          tsOpts('Todas'));
+    const tsSedeB      = new TomSelect('#r-sede-benef',    tsOpts('Todas'));
     const tsTipoAct    = new TomSelect('#r-tipo-actividad',tsOpts('Todos'));
     const tsFacultad   = new TomSelect('#r-facultad',      tsOpts('Todas'));
     const tsPrograma   = new TomSelect('#r-programa',      tsOpts('Todos'));
@@ -649,6 +669,7 @@
             if (allTipos || tipos.includes('Contratista'))    available.push('contratistas');
             if (allTipos || tipos.includes('Docente'))        available.push('docentes');
         }
+        if (allRoles || roles.includes('Familiar')) available.push('familiares');
         return available;
     }
 

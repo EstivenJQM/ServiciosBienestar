@@ -49,6 +49,7 @@ class ServicioExport
                 'administrativos' => $this->buildEmpleado($spreadsheet, 'Administrativo', 'Administrativos', 'administrativos'),
                 'contratistas'    => $this->buildEmpleado($spreadsheet, 'Contratista', 'Contratistas', 'contratistas'),
                 'docentes'        => $this->buildDocentes($spreadsheet),
+                'familiares'      => $this->buildFamiliares($spreadsheet),
                 default           => null,
             };
         }
@@ -202,6 +203,32 @@ class ServicioExport
         }
 
         $this->addWorksheet($ss, 'Docentes', $headers, $rows, 'docentes');
+    }
+
+    private function buildFamiliares(Spreadsheet $ss): void
+    {
+        $headers = [
+            ...self::SERVICIO_HEADERS,
+            'Documento', 'Nombre Completo', 'Correo',
+        ];
+        $rows = [];
+
+        foreach ($this->servicios as $s) {
+            $base  = $this->serviceRow($s);
+            $users = $s->usuariosAsignados->filter(fn($urs) => $urs->rol?->nombre === 'Familiar');
+
+            foreach ($users as $urs) {
+                $u = $urs->usuario;
+                $rows[] = [
+                    ...$base,
+                    $u?->documento       ?? '',
+                    $u?->nombre_completo ?? '',
+                    $u?->correo          ?? '',
+                ];
+            }
+        }
+
+        $this->addWorksheet($ss, 'Familiares', $headers, $rows, 'familiares');
     }
 
     // ── Helpers ───────────────────────────────────────────────────
