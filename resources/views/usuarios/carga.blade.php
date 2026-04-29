@@ -161,9 +161,7 @@
                         </code>
                         <p class="small text-muted mt-2 mb-0">
                             <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
-                            La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
-                            se crea automáticamente si no existe. El <strong>CARGO</strong> se crea
-                            automáticamente si no existe; el código es del cargo, no del empleado.
+                            La <strong>SEDE</strong> se busca por nombre.
                         </p>
                     </div>
 
@@ -177,9 +175,7 @@
                         </code>
                         <p class="small text-muted mt-2 mb-0">
                             <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
-                            La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
-                            (facultad) se crea automáticamente si no existe. El <strong>CARGO</strong>
-                            (ej. DOCENTE PLANTA, DOCENTE CATEDRA) se crea automáticamente si no existe.
+                            La <strong>SEDE</strong> se busca por nombre.
                         </p>
                     </div>
 
@@ -189,12 +185,11 @@
                             <i class="bi bi-info-circle me-1" style="color:#196844"></i>Columnas esperadas:
                         </p>
                         <code class="small d-block text-wrap" style="font-size:.72rem">
-                            DOCUMENTO ; NOMBRES ; APELLIDOS ; CORREO ; NOMBRE SEDE ; DEPENDENCIA
+                            DOCUMENTO ; NOMBRES ; APELLIDOS ; CORREO ; NOMBRE SEDE ; DEPENDENCIA ; CODIGO CARGO ; NOMBRE CARGO
                         </code>
                         <p class="small text-muted mt-2 mb-0">
                             <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
-                            La <strong>SEDE</strong> se busca por nombre. La <strong>DEPENDENCIA</strong>
-                            se crea automáticamente si no existe.
+                            La <strong>SEDE</strong> se busca por nombre.
                         </p>
                     </div>
 
