@@ -331,6 +331,7 @@
             formatoEstudiante.classList.add('d-none');
             formatoContratista.classList.add('d-none');
             formatoAdministrativo.classList.add('d-none');
+            formatoDocente.classList.add('d-none');
             btnProcesar.classList.add('d-none');
             nombreRolInput.value = '';
 
