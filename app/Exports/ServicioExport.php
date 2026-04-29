@@ -73,27 +73,31 @@ class ServicioExport
 
     private function buildPorServicios(Spreadsheet $ss): void
     {
-        $headers = [...self::SERVICIO_HEADERS, 'Documento', 'Nombre Completo', 'Correo', 'Rol'];
+        $headers = [...self::SERVICIO_HEADERS, 'Documento', 'Nombre Completo', 'Correo', 'Sede Beneficiario', 'Rol'];
         $rows    = [];
 
         foreach ($this->servicios as $s) {
             $base = $this->serviceRow($s);
             if ($s->usuariosAsignados->isEmpty()) {
-                $rows[] = [...$base, '', '', '', ''];
+                $rows[] = [...$base, '', '', '', '', ''];
                 continue;
             }
             foreach ($s->usuariosAsignados as $urs) {
-                $u         = $urs->usuario;
-                $esDocente = $urs->empleado?->tipoEmpleado?->nombre === 'Docente';
-                $rol       = $esDocente
-                    ? ($urs->empleado->cargo?->nombre ?? 'Docente')
-                    : ($urs->rol?->nombre ?? '');
+                $u       = $urs->usuario;
+                $tipoEmp = $urs->empleado?->tipoEmpleado?->nombre;
+                $rol     = match (true) {
+                    $tipoEmp === 'Docente'                              => $urs->empleado->cargo?->nombre ?? 'Docente',
+                    in_array($tipoEmp, ['Administrativo', 'Contratista',
+                        'Planta', 'Ocasional', 'Cátedra'], true)       => $tipoEmp,
+                    default                                             => $urs->rol?->nombre ?? '',
+                };
 
                 $rows[] = [
                     ...$base,
                     $u?->documento        ?? '',
                     $u?->nombre_completo  ?? '',
                     $u?->correo           ?? '',
+                    $urs->sede?->nombre   ?? '',
                     $rol,
                 ];
             }
@@ -106,7 +110,7 @@ class ServicioExport
     {
         $headers = [
             ...self::SERVICIO_HEADERS,
-            'Documento', 'Nombre Completo', 'Correo',
+            'Documento', 'Nombre Completo', 'Correo', 'Sede Beneficiario',
             'Facultad', 'Programa', 'Plan de Estudio', 'SNIES',
         ];
         $rows = [];
@@ -126,6 +130,7 @@ class ServicioExport
                     $u?->documento        ?? '',
                     $u?->nombre_completo  ?? '',
                     $u?->correo           ?? '',
+                    $urs->sede?->nombre   ?? '',
                     $prog?->facultad?->nombre ?? '',
                     $prog?->nombre            ?? '',
                     $plan?->codigo_plan       ?? '',
@@ -141,7 +146,7 @@ class ServicioExport
     {
         $headers = [
             ...self::SERVICIO_HEADERS,
-            'Documento', 'Nombre Completo', 'Correo',
+            'Documento', 'Nombre Completo', 'Correo', 'Sede Beneficiario',
             'Dependencia', 'Código Cargo', 'Cargo',
         ];
         $rows = [];
@@ -161,6 +166,7 @@ class ServicioExport
                     $u?->documento        ?? '',
                     $u?->nombre_completo  ?? '',
                     $u?->correo           ?? '',
+                    $urs->sede?->nombre   ?? '',
                     $emp?->dependencia?->nombre ?? '',
                     $emp?->cargo?->codigo       ?? '',
                     $emp?->cargo?->nombre       ?? '',
@@ -175,7 +181,7 @@ class ServicioExport
     {
         $headers = [
             ...self::SERVICIO_HEADERS,
-            'Documento', 'Nombre Completo', 'Correo',
+            'Documento', 'Nombre Completo', 'Correo', 'Sede Beneficiario',
             'Código Cargo', 'Cargo', 'Dependencia',
         ];
         $rows = [];
@@ -195,6 +201,7 @@ class ServicioExport
                     $u?->documento        ?? '',
                     $u?->nombre_completo  ?? '',
                     $u?->correo           ?? '',
+                    $urs->sede?->nombre   ?? '',
                     $emp?->cargo?->codigo       ?? '',
                     $emp?->cargo?->nombre       ?? '',
                     $emp?->dependencia?->nombre ?? '',
@@ -209,7 +216,7 @@ class ServicioExport
     {
         $headers = [
             ...self::SERVICIO_HEADERS,
-            'Documento', 'Nombre Completo', 'Correo',
+            'Documento', 'Nombre Completo', 'Correo', 'Sede Beneficiario',
         ];
         $rows = [];
 
@@ -224,6 +231,7 @@ class ServicioExport
                     $u?->documento       ?? '',
                     $u?->nombre_completo ?? '',
                     $u?->correo          ?? '',
+                    $urs->sede?->nombre  ?? '',
                 ];
             }
         }

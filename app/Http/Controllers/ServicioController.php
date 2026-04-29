@@ -491,7 +491,7 @@ class ServicioController extends Controller
             'usuariosAsignados' => function ($q) use ($hayBenef, $benFilter) {
                 if ($hayBenef) $benFilter($q);
                 $q->with([
-                    'usuario', 'rol',
+                    'usuario', 'rol', 'sede',
                     'estudianteEgresado.planEstudio.programaSede.programa.facultad',
                     'empleado.tipoEmpleado', 'empleado.dependencia', 'empleado.cargo',
                 ]);
