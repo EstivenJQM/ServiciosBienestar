@@ -30,13 +30,16 @@
                         <select id="id_linea" name="id_linea" required
                                 class="form-select {{ $errors->has('id_linea') ? 'is-invalid' : '' }}">
                             <option value="">-- Seleccione una línea --</option>
-                            @foreach($lineas as $linea)
-                                <option value="{{ $linea->id_linea }}"
-                                    {{ old('id_linea') == $linea->id_linea ? 'selected' : '' }}>
-                                    {{ $linea->componente->area->nombre }}
-                                    › {{ $linea->componente->nombre }}
-                                    › {{ $linea->nombre }}
-                                </option>
+                            @foreach($lineas->groupBy('id_componente') as $grupo)
+                                @php $comp = $grupo->first()->componente; @endphp
+                                <optgroup label="{{ $comp->area->nombre }} › {{ $comp->nombre }}">
+                                    @foreach($grupo as $linea)
+                                        <option value="{{ $linea->id_linea }}"
+                                            {{ old('id_linea') == $linea->id_linea ? 'selected' : '' }}>
+                                            {{ $linea->nombre }}
+                                        </option>
+                                    @endforeach
+                                </optgroup>
                             @endforeach
                         </select>
                         @error('id_linea')
