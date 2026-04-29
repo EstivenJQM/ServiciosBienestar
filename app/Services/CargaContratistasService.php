@@ -10,6 +10,7 @@ class CargaContratistasService
 {
     private array $sedeCache        = [];
     private array $dependenciaCache = [];
+    private array $cargoCache       = [];
 
     private int $idRol;
     private int $idTipoEmpleado;
@@ -54,8 +55,8 @@ class CargaContratistasService
         while (($cols = fgetcsv($handle, 0, $sep)) !== false) {
             $fila++;
 
-            if (count($cols) < 6) {
-                $errores[] = "Fila {$fila}: solo " . count($cols) . " columnas (se esperan al menos 6).";
+            if (count($cols) < 8) {
+                $errores[] = "Fila {$fila}: solo " . count($cols) . " columnas (se esperan al menos 8).";
                 continue;
             }
 
@@ -66,7 +67,9 @@ class CargaContratistasService
                 $correo,
                 $nombreSede,
                 $dependencia,
-            ] = array_map('trim', array_slice($cols, 0, 6));
+                $codigoCargo,
+                $nombreCargo,
+            ] = array_map('trim', array_slice($cols, 0, 8));
 
             $vacios = [];
             if (empty($documento))   $vacios[] = 'documento';
@@ -75,6 +78,8 @@ class CargaContratistasService
             if (empty($correo))      $vacios[] = 'correo';
             if (empty($nombreSede))  $vacios[] = 'nombre sede';
             if (empty($dependencia)) $vacios[] = 'dependencia';
+            if (empty($codigoCargo)) $vacios[] = 'codigo del cargo';
+            if (empty($nombreCargo)) $vacios[] = 'nombre del cargo';
 
             if (! empty($vacios)) {
                 $msg = 'Fila ' . $fila . ': campo(s) obligatorio(s) vacío(s): ' . implode(', ', $vacios) . '.';
@@ -82,7 +87,7 @@ class CargaContratistasService
                 $this->guardarInconsistencia(
                     $idPeriodo, $fila,
                     $documento, $nombres, $apellidos, $correo,
-                    $nombreSede, $dependencia,
+                    $nombreSede, $dependencia, $codigoCargo, $nombreCargo,
                     implode(', ', array_map(fn($c) => ucfirst($c) . ' es obligatorio', $vacios)) . '.'
                 );
                 continue;
@@ -91,11 +96,12 @@ class CargaContratistasService
             try {
                 DB::beginTransaction();
 
-                $sede  = $this->resolverSede($nombreSede);
-                $idDep = $this->resolverDependencia($dependencia);
+                $sede    = $this->resolverSede($nombreSede);
+                $idDep   = $this->resolverDependencia($dependencia);
+                $idCargo = $this->resolverCargo($codigoCargo, $nombreCargo);
                 [$usuario, $esNuevo] = $this->resolverUsuario($documento, $nombres, $apellidos, $correo);
-                $idUrs = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
-                $this->resolverEmpleado($idUrs, $idDep, null);
+                $idUrs   = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
+                $this->resolverEmpleado($idUrs, $idDep, $idCargo);
 
                 DB::commit();
                 $esNuevo ? $creados++ : $actualizados++;
@@ -106,7 +112,7 @@ class CargaContratistasService
                 $this->guardarInconsistencia(
                     $idPeriodo, $fila,
                     $documento, $nombres, $apellidos, $correo,
-                    $nombreSede, $dependencia, $msgError
+                    $nombreSede, $dependencia, $codigoCargo, $nombreCargo, $msgError
                 );
             }
         }
@@ -133,6 +139,10 @@ class CargaContratistasService
 
         foreach (DB::table('dependencia_alias')->get() as $a) {
             $this->dependenciaCache[$this->normalizar($a->alias)] = $a->id_dependencia;
+        }
+
+        foreach (DB::table('cargo')->whereNotNull('codigo')->get() as $c) {
+            $this->cargoCache[$this->normalizar($c->codigo)] = $c->id_cargo;
         }
     }
 
@@ -167,15 +177,22 @@ class CargaContratistasService
             return $this->dependenciaCache[$claveFuzzy];
         }
 
-        $nombreLimpio = mb_strtoupper(trim($nombre));
-        $id = DB::table('dependencia')->insertGetId([
-            'nombre'     => $nombreLimpio,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        throw new \RuntimeException(
+            "La dependencia \"{$nombre}\" no existe. Regístrela primero en el módulo de Dependencias."
+        );
+    }
 
-        $this->dependenciaCache[$norm] = $id;
-        return $id;
+    private function resolverCargo(string $codigoCargo, string $nombreCargo): int
+    {
+        $normCodigo = $this->normalizar($codigoCargo);
+
+        if (isset($this->cargoCache[$normCodigo])) {
+            return $this->cargoCache[$normCodigo];
+        }
+
+        throw new \RuntimeException(
+            "El cargo con código \"{$codigoCargo}\" ({$nombreCargo}) no existe. Regístrelo primero en el módulo de Cargos."
+        );
     }
 
     private function resolverUsuario(
@@ -264,6 +281,8 @@ class CargaContratistasService
         string $correo,
         string $nombreSede,
         string $dependencia,
+        string $codigoCargo,
+        string $nombreCargo,
     ): array {
         $this->idPeriodo      = $idPeriodo;
         $this->idRol          = (int) DB::table('rol')->where('nombre', 'Empleado')->value('id_rol');
@@ -271,6 +290,7 @@ class CargaContratistasService
 
         $this->sedeCache        = [];
         $this->dependenciaCache = [];
+        $this->cargoCache       = [];
         $this->cargarCaches();
 
         $vacios = [];
@@ -280,6 +300,8 @@ class CargaContratistasService
         if (empty($correo))      $vacios[] = 'correo';
         if (empty($nombreSede))  $vacios[] = 'nombre sede';
         if (empty($dependencia)) $vacios[] = 'dependencia';
+        if (empty($codigoCargo)) $vacios[] = 'codigo del cargo';
+        if (empty($nombreCargo)) $vacios[] = 'nombre del cargo';
 
         if (! empty($vacios)) {
             return [false, implode(', ', array_map(fn($c) => ucfirst($c) . ' es obligatorio', $vacios)) . '.'];
@@ -288,11 +310,12 @@ class CargaContratistasService
         try {
             DB::beginTransaction();
 
-            $sede  = $this->resolverSede($nombreSede);
-            $idDep = $this->resolverDependencia($dependencia);
+            $sede    = $this->resolverSede($nombreSede);
+            $idDep   = $this->resolverDependencia($dependencia);
+            $idCargo = $this->resolverCargo($codigoCargo, $nombreCargo);
             [$usuario,] = $this->resolverUsuario($documento, $nombres, $apellidos, $correo);
-            $idUrs = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
-            $this->resolverEmpleado($idUrs, $idDep, null);
+            $idUrs   = $this->resolverUsuarioRolSede($usuario->id_usuario, $sede->id_sede);
+            $this->resolverEmpleado($idUrs, $idDep, $idCargo);
 
             DB::commit();
             return [true, null];
@@ -311,6 +334,8 @@ class CargaContratistasService
         string $correo,
         string $nombreSede,
         string $dependencia,
+        string $codigoCargo,
+        string $nombreCargo,
         string $error,
     ): void {
         try {
@@ -325,8 +350,8 @@ class CargaContratistasService
                 'codigo_sede'     => '',
                 'nombre_sede'     => $nombreSede,
                 'dependencia'     => $dependencia,
-                'codigo_cargo'    => '',
-                'nombre_cargo'    => '',
+                'codigo_cargo'    => $codigoCargo,
+                'nombre_cargo'    => $nombreCargo,
                 'codigo_plan'     => '',
                 'nombre_programa' => '',
                 'nombre_facultad' => '',

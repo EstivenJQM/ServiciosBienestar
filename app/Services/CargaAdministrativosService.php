@@ -177,15 +177,9 @@ class CargaAdministrativosService
             return $this->dependenciaCache[$claveFuzzy];
         }
 
-        $nombreLimpio = mb_strtoupper(trim($nombre));
-        $id = DB::table('dependencia')->insertGetId([
-            'nombre'     => $nombreLimpio,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->dependenciaCache[$norm] = $id;
-        return $id;
+        throw new \RuntimeException(
+            "La dependencia \"{$nombre}\" no existe. Regístrela primero en el módulo de Dependencias."
+        );
     }
 
     private function resolverCargo(string $codigoCargo, string $nombreCargo): int
@@ -196,15 +190,9 @@ class CargaAdministrativosService
             return $this->cargoCache[$normCodigo];
         }
 
-        $id = DB::table('cargo')->insertGetId([
-            'codigo'     => mb_strtoupper(trim($codigoCargo)),
-            'nombre'     => mb_strtoupper(trim($nombreCargo)),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        $this->cargoCache[$normCodigo] = $id;
-        return $id;
+        throw new \RuntimeException(
+            "El cargo con código \"{$codigoCargo}\" ({$nombreCargo}) no existe. Regístrelo primero en el módulo de Cargos."
+        );
     }
 
     private function resolverUsuario(
