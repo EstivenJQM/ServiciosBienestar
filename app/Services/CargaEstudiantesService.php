@@ -242,19 +242,9 @@ class CargaEstudiantesService
             return $this->programaCache[$clave];
         }
 
-        $nombreLimpio = mb_strtoupper(trim($nombre));
-        $id = DB::table('programa')->insertGetId([
-            'id_facultad'      => $idFacultad,
-            'id_tipo_formacion'=> null,
-            'nombre'           => $nombreLimpio,
-            'created_at'       => now(),
-            'updated_at'       => now(),
-        ]);
-
-        $programa = DB::table('programa')->where('id_programa', $id)->first();
-        $this->programaCache[$claveExacta] = $programa;
-
-        return $programa;
+        throw new \RuntimeException(
+            "El programa \"{$nombre}\" no existe en la facultad indicada. Regístrelo primero en el módulo de Programas."
+        );
     }
 
     private function resolverProgramaSede(int $idPrograma, int $idSede): int
@@ -265,15 +255,9 @@ class CargaEstudiantesService
             return $this->progSedeCache[$clave];
         }
 
-        $id = DB::table('programa_sede')->insertGetId([
-            'id_programa' => $idPrograma,
-            'id_sede'     => $idSede,
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ]);
-
-        $this->progSedeCache[$clave] = $id;
-        return $id;
+        throw new \RuntimeException(
+            "El programa no está asociado a la sede indicada. Asócielo primero en el módulo de Programas."
+        );
     }
 
     private function resolverPlanEstudio(int $idProgramaSede, string $codigoPlan): int
@@ -284,15 +268,9 @@ class CargaEstudiantesService
             return $this->planCache[$clave];
         }
 
-        $id = DB::table('plan_estudio')->insertGetId([
-            'id_programa_sede' => $idProgramaSede,
-            'codigo_plan'      => $codigoPlan,
-            'created_at'       => now(),
-            'updated_at'       => now(),
-        ]);
-
-        $this->planCache[$clave] = $id;
-        return $id;
+        throw new \RuntimeException(
+            "El plan de estudio con código \"{$codigoPlan}\" no existe para ese programa y sede. Regístrelo primero en el módulo de Planes."
+        );
     }
 
     private function resolverUsuario(
